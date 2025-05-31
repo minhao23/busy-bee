@@ -9,8 +9,8 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1 className="app-title">Busy Bee</h1>
-        <p className="app-subtitle">Stay productive, one pomodoro at a time</p>
+        <h1 className="app-title">Lets get to work!</h1>
+        <p className="app-subtitle">use zen quotes api</p>
       </header>
 
       <nav className="tab-navigation">
