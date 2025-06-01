@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PomodoroTimer from "./components/PomodoroTimer";
+import WebApp from "@twa-dev/sdk";
 import TodoList from "./components/TodoList";
 import "./App.css";
 
 function App() {
   const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
+  useEffect(() => {
+    WebApp.ready();
+    //WebApp.expand();
+  }, []);
 
   return (
     <div className="app">
@@ -60,6 +65,9 @@ function App() {
 
       <main className="app-main">
         {activeTab === "timer" ? <PomodoroTimer /> : <TodoList />}
+        <button className="close-button" onClick={() => WebApp.close()}>
+          Close
+        </button>
       </main>
     </div>
   );
