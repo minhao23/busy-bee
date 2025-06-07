@@ -3,8 +3,24 @@ import PomodoroTimer from "./components/PomodoroTimer";
 import WebApp from "@twa-dev/sdk";
 import TodoList from "./components/TodoList";
 import "./App.css";
+import { initializeTelegramUser } from "./auth";
 
 function App() {
+  useEffect(() => {
+    const initUser = async () => {
+      try {
+        const user = await initializeTelegramUser();
+        console.log("Telegram user initialized:", user);
+      } catch (error) {
+        console.error("Failed to initialize user:", error);
+      }
+    };
+
+    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+      initUser();
+    }
+  }, []);
+
   const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
   useEffect(() => {
     WebApp.ready();

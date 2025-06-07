@@ -1,128 +1,160 @@
-import React, { useState, useRef } from "react";
-import { TodoItem } from "../types";
+import React, { useState, useEffect } from "react";
+import supabase from "../utils/supabase";
+import "./TodoList.css";
+
+type Task = {
+  id: number;
+  created_at: string;
+  finished_at: string | null;
+  importance: number; // 1-4 for Eisenhower quadrants
+  task_name: string;
+};
 
 const TodoList: React.FC = () => {
-  const [todos, setTodos] = useState<TodoItem[]>([]);
-  const [inputValue, setInputValue] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
 
-  const addTodo = () => {
-    if (inputValue.trim() === "") return;
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [newTaskName, setNewTaskName] = useState("");
+  const [selectedImportance, setSelectedImportance] = useState<1 | 2 | 3 | 4>(
+    1
+  );
 
-    const newTodo: TodoItem = {
-      id: Date.now().toString(),
-      text: inputValue.trim(),
-      completed: false,
-      createdAt: new Date(),
-    };
+  // Fetch tasks from Supabase
+  const fetchTasks = async () => {
+    console.log("supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+    console.log("supabase key:", import.meta.env.VITE_SUPABASE_ANON_KEY);
+    const { data, error } = await supabase
+      .from("Todo")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    setTodos((prev) => [newTodo, ...prev]);
-    setInputValue("");
-    inputRef.current?.focus();
+    if (data) setTasks(data);
+    if (error) console.error("Error fetching tasks:", error);
   };
 
-  const toggleTodo = (id: string) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-      ),
-    );
-  };
+  // Add new task
+  const addTask = async () => {
+    if (!newTaskName.trim()) return;
 
-  const deleteTodo = (id: string) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
-  };
+    const { data, error } = await supabase
+      .from("Todo")
+      .insert([
+        {
+          task_name: newTaskName.trim(),
+          importance: selectedImportance,
+          finished_at: null,
+        },
+      ])
+      .select();
 
-  const handleInputKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      addTodo();
+    if (data) {
+      setTasks([...data, ...tasks]);
+      setNewTaskName("");
+    }
+    if (error) {
+      console.error("Error adding task:", error);
     }
   };
 
-  const completedCount = todos.filter((todo) => todo.completed).length;
-  const totalCount = todos.length;
+  // Toggle task completion
+  const toggleTaskCompletion = async (taskId: number) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    const newFinishedAt = task.finished_at ? null : new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from("todos")
+      .update({ finished_at: newFinishedAt })
+      .eq("id", taskId)
+      .select();
+
+    if (data) {
+      setTasks(tasks.map((t) => (t.id === taskId ? data[0] : t)));
+    }
+  };
+
+  // Delete task
+  const deleteTask = async (taskId: number) => {
+    const { error } = await supabase.from("todos").delete().eq("id", taskId);
+
+    if (!error) {
+      setTasks(tasks.filter((t) => t.id !== taskId));
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  // Quadrant definitions
+  const quadrants = [
+    { id: 1, title: "Urgent & Important", color: "red" },
+    { id: 2, title: "Not Urgent & Important", color: "blue" },
+    { id: 3, title: "Urgent & Not Important", color: "orange" },
+    { id: 4, title: "Not Urgent & Not Important", color: "green" },
+  ];
 
   return (
-    <div className="todo-list">
-      <div className="todo-header">
-        <h2 className="todo-title">Todo List</h2>
-        {totalCount > 0 && (
-          <div className="todo-stats">
-            {completedCount} of {totalCount} completed
-          </div>
-        )}
-      </div>
-
-      <div className="todo-input-container">
+    <div className="todo-container">
+      <div className="task-input-container">
         <input
-          ref={inputRef}
           type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleInputKeyPress}
-          placeholder="Add a new task..."
-          className="todo-input"
+          value={newTaskName}
+          onChange={(e) => setNewTaskName(e.target.value)}
+          placeholder="Enter task..."
+          onKeyPress={(e) => e.key === "Enter" && addTask()}
         />
-        <button
-          onClick={addTodo}
-          className="add-button"
-          disabled={inputValue.trim() === ""}
+        <select
+          value={selectedImportance}
+          onChange={(e) =>
+            setSelectedImportance(parseInt(e.target.value) as 1 | 2 | 3 | 4)
+          }
         >
-          Add
-        </button>
+          {quadrants.map((q) => (
+            <option key={q.id} value={q.id}>
+              {q.title}
+            </option>
+          ))}
+        </select>
+        <button onClick={addTask}>Add Task</button>
       </div>
 
-      <div className="todo-items">
-        {todos.length === 0 ? (
-          <div className="empty-state">
-            <p>No tasks yet. Add one above!</p>
-          </div>
-        ) : (
-          todos.map((todo) => (
-            <div
-              key={todo.id}
-              className={`todo-item ${todo.completed ? "completed" : ""}`}
-            >
-              <button
-                className="todo-checkbox"
-                onClick={() => toggleTodo(todo.id)}
-                aria-label={
-                  todo.completed ? "Mark as incomplete" : "Mark as complete"
-                }
-              >
-                {todo.completed && (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path
-                      d="M13.5 4.5L6 12L2.5 8.5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+      <div className="quadrants-grid">
+        {quadrants.map((quadrant) => (
+          <div
+            key={quadrant.id}
+            className={`quadrant quadrant-${quadrant.color}`}
+          >
+            <h3>{quadrant.title}</h3>
+            <div className="tasks-list">
+              {tasks
+                .filter((task) => task.importance === quadrant.id)
+                .map((task) => (
+                  <div
+                    key={task.id}
+                    className={`task ${task.finished_at ? "completed" : ""}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!task.finished_at}
+                      onChange={() => toggleTaskCompletion(task.id)}
                     />
-                  </svg>
-                )}
-              </button>
-
-              <span className="todo-text">{todo.text}</span>
-
-              <button
-                className="delete-button"
-                onClick={() => deleteTodo(todo.id)}
-                aria-label="Delete task"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M12 4L4 12M4 4L12 12"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+                    <span>{task.task_name}</span>
+                    <span className="task-date">
+                      {new Date(task.created_at).toLocaleDateString()}
+                    </span>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteTask(task.id)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
     </div>
   );

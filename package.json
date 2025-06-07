@@ -13,6 +13,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^7.1.0",
+    "@supabase/supabase-js": "^2.49.8",
     "@telegram-apps/react-router-integration": "^1.0.1",
     "@telegram-web-app/core": "^0.0.1-beta.1",
     "@twa-dev/sdk": "^8.0.2",
