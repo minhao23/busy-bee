@@ -1,36 +1,73 @@
 import React, { useState, useEffect } from "react";
 import PomodoroTimer from "./components/PomodoroTimer";
-import WebApp from "@twa-dev/sdk";
+import WebApp from "@twa-dev/sdk"; // This is the correct import
 import TodoList from "./components/TodoList";
 import "./App.css";
 import { initializeTelegramUser } from "./auth";
 
+// Mock setup that matches both window.Telegram.WebApp and @twa-dev/sdk WebApp
+if (import.meta.env.DEV) {
+  if (!window.Telegram?.WebApp) {
+    const mockWebApp = {
+      initDataUnsafe: {
+        user: {
+          id: 123456789,
+          first_name: "Test",
+          username: "test_user",
+        },
+      },
+      ready: () => console.log("Telegram.WebApp.ready() called"),
+      expand: () => console.log("Telegram.WebApp.expand() called"),
+      close: () => console.log("Telegram.WebApp.close() called"),
+    };
+
+    window.Telegram = { WebApp: mockWebApp };
+    // Also mock the SDK's WebApp if needed
+    if (!window.WebApp) {
+      window.WebApp = mockWebApp;
+    }
+  }
+}
+
 function App() {
+  const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
+  const [isTelegramReady, setIsTelegramReady] = useState(false);
+
   useEffect(() => {
-    const initUser = async () => {
+    const initTelegram = async () => {
       try {
+        console.log("Initializing Telegram WebApp...");
+
+        // Use the SDK's WebApp consistently
+        WebApp.ready();
+        WebApp.expand();
+        setIsTelegramReady(true);
+
+        // Check for user data using the same WebApp instance
+        // if (WebApp.initDataUnsafe?.user) {
+        //   console.log("Telegram user detected, initializing...");
+        //   const user = await initializeTelegramUser();
+        //   console.log("Telegram user initialized:", user);
+        // } else {
+        //   console.log("No Telegram user data available");
+        // }
+
+        //Above code is commented out to avoid unnecessary calls during development
+
         const user = await initializeTelegramUser();
         console.log("Telegram user initialized:", user);
       } catch (error) {
-        console.error("Failed to initialize user:", error);
+        console.error("Initialization error:", error);
       }
     };
 
-    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-      initUser();
-    }
-  }, []);
-
-  const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
-  useEffect(() => {
-    WebApp.ready();
-    //WebApp.expand();
+    initTelegram();
   }, []);
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1 className="app-title">Lets get to work!</h1>
+        <h1 className="app-title">Let's get to work!</h1>
         <p className="app-subtitle">use zen quotes api</p>
       </header>
 
@@ -81,9 +118,11 @@ function App() {
 
       <main className="app-main">
         {activeTab === "timer" ? <PomodoroTimer /> : <TodoList />}
-        <button className="close-button" onClick={() => WebApp.close()}>
-          Close
-        </button>
+        {isTelegramReady && (
+          <button className="close-button" onClick={() => WebApp.close()}>
+            Close
+          </button>
+        )}
       </main>
     </div>
   );
