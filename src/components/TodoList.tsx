@@ -12,6 +12,8 @@ type Task = {
 
 const TodoList: React.FC = () => {
   console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+  const getID = async () =>
+    await supabase.auth.getUser().then((u) => u.data?.user?.id);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
@@ -21,20 +23,40 @@ const TodoList: React.FC = () => {
 
   // Fetch tasks from Supabase
   const fetchTasks = async () => {
-    console.log("supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-    console.log("supabase key:", import.meta.env.VITE_SUPABASE_ANON_KEY);
-    const { data, error } = await supabase
+    // const session = supabase.auth.getSession();
+    // console.log("Session:", session);
+    // const user = supabase.auth.getUser();
+    // console.log("User:", user);
+    // console.log(
+    //   "auth.id:",
+    //   supabase.auth.getUser().then((u) => u.data?.user?.id)
+    // );
+    const user = await getID();
+    let { data: Todo, error } = await supabase
       .from("Todo")
       .select("*")
+
+      // Filters
+      .eq("user_uuid", user)
       .order("created_at", { ascending: false });
 
-    if (data) setTasks(data);
+    if (Todo) setTasks(Todo);
     if (error) console.error("Error fetching tasks:", error);
   };
 
   // Add new task
   const addTask = async () => {
     if (!newTaskName.trim()) return;
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error("User not found", userError);
+      return;
+    }
 
     const { data, error } = await supabase
       .from("Todo")
@@ -43,10 +65,10 @@ const TodoList: React.FC = () => {
           task_name: newTaskName.trim(),
           importance: selectedImportance,
           finished_at: null,
+          user_uuid: user.id, // ✅ now this is a string, not a Promise
         },
       ])
       .select();
-
     if (data) {
       setTasks([...data, ...tasks]);
       setNewTaskName("");
@@ -64,7 +86,7 @@ const TodoList: React.FC = () => {
     const newFinishedAt = task.finished_at ? null : new Date().toISOString();
 
     const { data, error } = await supabase
-      .from("todos")
+      .from("Todo")
       .update({ finished_at: newFinishedAt })
       .eq("id", taskId)
       .select();
@@ -89,10 +111,10 @@ const TodoList: React.FC = () => {
 
   // Quadrant definitions
   const quadrants = [
-    { id: 1, title: "Urgent & Important", color: "red" },
-    { id: 2, title: "Not Urgent & Important", color: "blue" },
-    { id: 3, title: "Urgent & Not Important", color: "orange" },
-    { id: 4, title: "Not Urgent & Not Important", color: "green" },
+    { id: 1, title: "Urgent & Important", color: 1 },
+    { id: 2, title: "Not Urgent & Important", color: 2 },
+    { id: 3, title: "Urgent & Not Important", color: 3 },
+    { id: 4, title: "Not Urgent & Not Important", color: 4 },
   ];
 
   return (
@@ -147,14 +169,15 @@ const TodoList: React.FC = () => {
                     <button
                       className="delete-btn"
                       onClick={() => deleteTask(task.id)}
-                    >
-                      ×
-                    </button>
+                    ></button>
                   </div>
                 ))}
             </div>
           </div>
         ))}
+      </div>
+      <div className="completed">
+        <h3>completed tasks here </h3>
       </div>
     </div>
   );
