@@ -26,8 +26,6 @@ const initializeTelegramUser = async () => {
           password,
         });
         if (signupError) throw signupError;
-
-        // ⚠️ Optionally auto-confirm email here via Supabase Admin API if needed
       }
 
       // Ensure session is available

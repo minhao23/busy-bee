@@ -17,9 +17,25 @@ const TodoList: React.FC = () => {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
+  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [selectedImportance, setSelectedImportance] = useState<1 | 2 | 3 | 4>(
     1
   );
+
+  const fetchCompletedTasks = async () => {
+    const user = await getID();
+
+    // Fetch tasks from Supabase
+    const { data: Todo, error } = await supabase
+      .from("Todo")
+      .select("*")
+      .eq("user_uuid", user)
+      .not("finished_at", "is", null) // Fetch only completed tasks
+      .order("created_at", { ascending: false });
+
+    if (Todo) setCompletedTasks(Todo);
+    if (error) console.error("Error fetching tasks:", error);
+  };
 
   // Fetch tasks from Supabase
   const fetchTasks = async () => {
@@ -38,6 +54,7 @@ const TodoList: React.FC = () => {
 
       // Filters
       .eq("user_uuid", user)
+      .is("finished_at", null)
       .order("created_at", { ascending: false });
 
     if (Todo) setTasks(Todo);
@@ -93,6 +110,9 @@ const TodoList: React.FC = () => {
 
     if (data) {
       setTasks(tasks.map((t) => (t.id === taskId ? data[0] : t)));
+      await new Promise((resolve) => setTimeout(resolve, 300)); //delay for animation
+      fetchTasks(); // Refresh tasks
+      fetchCompletedTasks(); // Refresh completed tasks
     }
   };
 
@@ -107,6 +127,7 @@ const TodoList: React.FC = () => {
 
   useEffect(() => {
     fetchTasks();
+    fetchCompletedTasks();
   }, []);
 
   // Quadrant definitions
@@ -177,7 +198,30 @@ const TodoList: React.FC = () => {
         ))}
       </div>
       <div className="completed">
-        <h3>completed tasks here </h3>
+        <h3>
+          completed tasks here
+          <div className="tasks-list">
+            {completedTasks.map((completedTask) => (
+              <div
+                key={completedTask.id}
+                className={`task ${
+                  completedTask.finished_at ? "completed" : ""
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!completedTask.finished_at}
+                  onChange={() => toggleTaskCompletion(completedTask.id)}
+                />
+                <span>{completedTask.task_name}</span>
+                <button
+                  className="delete-btn"
+                  onClick={() => deleteTask(completedTask.id)}
+                ></button>
+              </div>
+            ))}
+          </div>
+        </h3>
       </div>
     </div>
   );
