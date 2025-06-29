@@ -97,7 +97,9 @@ const TodoList: React.FC = () => {
 
   // Toggle task completion
   const toggleTaskCompletion = async (taskId: number) => {
-    const task = tasks.find((t) => t.id === taskId);
+    const task =
+      tasks.find((t) => t.id === taskId) ||
+      completedTasks.find((t) => t.id === taskId);
     if (!task) return;
 
     const newFinishedAt = task.finished_at ? null : new Date().toISOString();
@@ -118,10 +120,12 @@ const TodoList: React.FC = () => {
 
   // Delete task
   const deleteTask = async (taskId: number) => {
-    const { error } = await supabase.from("todos").delete().eq("id", taskId);
+    console.log("Deleting task with ID:", taskId);
+    const { error } = await supabase.from("Todo").delete().eq("id", taskId);
 
     if (!error) {
       setTasks(tasks.filter((t) => t.id !== taskId));
+      setCompletedTasks(completedTasks.filter((t) => t.id !== taskId));
     }
   };
 
@@ -198,30 +202,26 @@ const TodoList: React.FC = () => {
         ))}
       </div>
       <div className="completed">
-        <h3>
-          completed tasks here
-          <div className="tasks-list">
-            {completedTasks.map((completedTask) => (
-              <div
-                key={completedTask.id}
-                className={`task ${
-                  completedTask.finished_at ? "completed" : ""
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={!!completedTask.finished_at}
-                  onChange={() => toggleTaskCompletion(completedTask.id)}
-                />
-                <span>{completedTask.task_name}</span>
-                <button
-                  className="delete-btn"
-                  onClick={() => deleteTask(completedTask.id)}
-                ></button>
-              </div>
-            ))}
-          </div>
-        </h3>
+        <h3>Completed Tasks</h3>
+        <div className="tasks-list">
+          {completedTasks.map((completedTask) => (
+            <div
+              key={completedTask.id}
+              className={`task ${completedTask.finished_at ? "completed" : ""}`}
+            >
+              <input
+                type="checkbox"
+                checked={!!completedTask.finished_at}
+                onChange={() => toggleTaskCompletion(completedTask.id)}
+              />
+              <span>{completedTask.task_name}</span>
+              <button
+                className="delete-btn"
+                onClick={() => deleteTask(completedTask.id)}
+              ></button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

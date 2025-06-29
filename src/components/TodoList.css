@@ -29,12 +29,16 @@
 
 /* Task item inside completed section */
 .task.completed {
-  background-color: #dcedc8;
+  background-color: #bff2b8d6;
   color: #33691e;
-  text-decoration: line-through;
   font-style: italic;
   opacity: 0.85;
   transition: all 0.3s ease;
+}
+
+.task.completed span {
+  text-decoration: line-through;
+  font-style: italic;
 }
 
 /* Optional: Adjust checkbox size in completed */
@@ -86,6 +90,7 @@
   color: #f44336;
   font-weight: bold;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .delete-btn::after {
@@ -178,14 +183,7 @@
   background-color: rgb(197, 170, 225);
   transition: background 0.3s, opacity 0.3s;
 }
-/* Style for completed tasks */
-.task.completed {
-  padding: 12px;
-  margin-top: 0%;
-  background-color: #c8e6c9;
-  color: #388e3c;
-  text-decoration: line-through;
-}
+
 
 /* Small grey date text */
 .task-date {
@@ -195,15 +193,6 @@
   margin-right: 10px;
 }
 
-
-.delete-btn {
-  background: none;
-  border: none;
-  color: #f44336;
-  font-size: 1.2em;
-  cursor: pointer;
-  padding: 0 5px;
-}
 
 /* Responsive Layout */
 @media (max-width: 768px) {
