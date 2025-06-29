@@ -130,7 +130,9 @@ const PomodoroTimer: React.FC = () => {
               cx="100"
               cy="100"
               strokeDasharray={`${2 * Math.PI * 92}`}
-              strokeDashoffset={`${2 * Math.PI * 92 * (1 - getProgressPercentage() / 100)}`}
+              strokeDashoffset={`${
+                2 * Math.PI * 92 * (1 - getProgressPercentage() / 100)
+              }`}
               transform="rotate(-90 100 100)"
             />
           </svg>
@@ -142,8 +144,8 @@ const PomodoroTimer: React.FC = () => {
               {mode === "work"
                 ? "Work"
                 : mode === "shortBreak"
-                  ? "Short Break"
-                  : "Long Break"}
+                ? "Short Break"
+                : "Long Break"}
             </span>
           </div>
         </div>

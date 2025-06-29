@@ -1,8 +1,10 @@
+
 export interface TodoItem {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: Date;
+  id: number;
+  created_at: string;
+  finished_at: string | null;
+  importance: number; // 1-4 for Eisenhower quadrants
+  task_name: string;
 }
 
 export interface TimerState {
