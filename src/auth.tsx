@@ -59,7 +59,7 @@ const initializeTelegramUser = async () => {
 
       const email = `${userId}@telegram.com`;
       const password = userId;
-
+      // to telegramId.toString();
       let { error } = await supabase.auth.signUp({
         email: email,
         password: password,
