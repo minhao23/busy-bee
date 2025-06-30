@@ -7,7 +7,7 @@ import { initializeTelegramUser } from "./auth";
 
 // Mock setup that matches both window.Telegram.WebApp and @twa-dev/sdk WebApp
 if (import.meta.env.DEV) {
-  if (!window.Telegram?.WebApp) {
+  if (!(window as any)["Telegram"]?.WebApp) {
     const mockWebApp = {
       initDataUnsafe: {
         user: {
@@ -20,11 +20,8 @@ if (import.meta.env.DEV) {
       expand: () => console.log("Telegram.WebApp.expand() called"),
       close: () => console.log("Telegram.WebApp.close() called"),
     };
-
-    window.Telegram = { WebApp: mockWebApp };
-    // Also mock the SDK's WebApp if needed
-    if (!window.WebApp) {
-      window.WebApp = mockWebApp;
+    if (!(window as any)["WebApp"]) {
+      (window as any)["WebApp"] = mockWebApp;
     }
   }
 }
