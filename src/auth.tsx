@@ -65,7 +65,7 @@ const initializeTelegramUser = async () => {
         password: password,
         options: {
           data: {
-            telegram_id: telegramId,
+            telegram_id: 1234567890,
           },
         },
       });
