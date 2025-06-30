@@ -46,7 +46,6 @@ const initializeTelegramUser = async () => {
       userId = user.id;
       username = "dev_user";
     } else {
-      // Production environment
       const tgUser = WebApp.initDataUnsafe.user;
       if (!tgUser) throw new Error("Telegram authentication required");
 
@@ -65,7 +64,7 @@ const initializeTelegramUser = async () => {
         password: password,
         options: {
           data: {
-            telegram_id: telegramId,
+            telegram_id: 1234567890,
           },
         },
       });
