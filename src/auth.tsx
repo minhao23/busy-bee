@@ -114,7 +114,7 @@ const initializeTelegramUser = async () => {
       .from("User")
       .insert({
         id: userId,
-        username,
+        username: username,
         telegram_id: telegramId,
         updated_at: new Date().toISOString(),
       })
