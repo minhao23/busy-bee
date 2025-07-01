@@ -4,7 +4,7 @@ import { v5 as uuidv5 } from "uuid";
 
 const initializeTelegramUser = async () => {
   try {
-    let telegramId: bigint | null = null;
+    let telegramId: number | null = null;
     let username: string;
     let userId: string;
 
@@ -49,7 +49,7 @@ const initializeTelegramUser = async () => {
       const tgUser = WebApp.initDataUnsafe.user;
       if (!tgUser) throw new Error("Telegram authentication required");
 
-      telegramId = BigInt(tgUser.id);
+      telegramId = tgUser.id;
       username = tgUser.username || `user_${tgUser.id.toString().slice(0, 8)}`;
       userId = uuidv5(
         tgUser.id.toString(),
@@ -58,7 +58,6 @@ const initializeTelegramUser = async () => {
 
       const email = `${userId}@telegram.com`;
       const password = userId;
-
       let { error } = await supabase.auth.signUp({
         email: email,
         password: password,
@@ -113,7 +112,7 @@ const initializeTelegramUser = async () => {
       .from("User")
       .insert({
         id: userId,
-        username,
+        username: username || "no name found",
         telegram_id: telegramId,
         updated_at: new Date().toISOString(),
       })
