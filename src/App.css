@@ -1,7 +1,7 @@
 /* App Layout */
 .app {
   min-height: 100vh;
-  min-width: none;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: circular-gradient(135deg, #5e80df 0%, #8bd1f2 100%);
