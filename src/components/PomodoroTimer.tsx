@@ -82,7 +82,6 @@ const PomodoroTimer: React.FC = () => {
   return (
     <div className="pomodoro-timer">
       <div className="timer-header">
-        <h2 className="timer-title">Pomodoro Timer</h2>
         <div className="session-counter">
           Sessions Completed: {completedSessions}
         </div>
@@ -111,7 +110,11 @@ const PomodoroTimer: React.FC = () => {
 
       <div className="timer-display">
         <div className="timer-circle">
-          <svg className="progress-ring" width="200" height="200">
+          <svg
+            className="progress-ring"
+            viewBox="0 0 200 200"
+            style={{ width: "40vmin", height: "40vmin" }}
+          >
             <circle
               className="progress-ring-background"
               stroke="#e5e7eb"
@@ -129,9 +132,9 @@ const PomodoroTimer: React.FC = () => {
               r="92"
               cx="100"
               cy="100"
-              strokeDasharray={`${2 * Math.PI * 92}`}
+              strokeDasharray={`${2 * Math.PI * 96}`}
               strokeDashoffset={`${
-                2 * Math.PI * 92 * (1 - getProgressPercentage() / 100)
+                2 * Math.PI * 96 * (1 - getProgressPercentage() / 100)
               }`}
               transform="rotate(-90 100 100)"
             />

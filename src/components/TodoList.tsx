@@ -12,9 +12,11 @@ type Task = {
 
 const TodoList: React.FC = () => {
   console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-  const getID = async () =>
-    await supabase.auth.getUser().then((u) => u.data?.user?.id);
-
+  const getID = async () => {
+    const telegramUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
+    if (!telegramUser) throw new Error("Telegram user not found");
+    return telegramUser.id.toString();
+  };
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
