@@ -107,8 +107,11 @@
 /* Quadrants Grid */
 .quadrants-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  grid-template-rows: repeat(2, auto);   /* 2 rows */
+  gap: 1rem;
+  margin-top: 1rem;
+
 }
 
 .quadrant {
@@ -183,3 +186,4 @@
     grid-template-columns: 1fr;
   }
 }
+

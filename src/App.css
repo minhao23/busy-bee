@@ -4,7 +4,6 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: circular-gradient(135deg, #5e80df 0%, #8bd1f2 100%);
   color: #ffffff;
   padding: 0;
   margin: 0;
@@ -13,7 +12,7 @@
 }
 
 .app-header {
-  width: 100vw; /* full viewport width */
+  width: 100%; /* full viewport width */
   max-width: 100%; /* prevent horizontal scroll */
   text-align: center;
   padding: 0rem;
@@ -41,7 +40,7 @@
 
 /* Tab Navigation */
 .tab-navigation {
-  width: 100vw;
+  width: 100%;
   display: flex;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -50,7 +49,7 @@
 
 .tab-button {
   flex: 1;
-  padding: 1rem;
+  padding: 0.5rem;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.7);
@@ -472,4 +471,18 @@
   .mode-button {
     border-radius: 0.75rem;
   }
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  z-index: 10;
 }
