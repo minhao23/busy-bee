@@ -5,6 +5,13 @@ import TodoList from "./components/TodoList";
 import "./App.css";
 import { initializeTelegramUser } from "./auth";
 
+declare global {
+  interface Window {
+    Telegram: any;
+  }
+} // this is purely to deal with typescript typechecking,
+// an issue that would not be present in JS
+
 // Mock setup that matches both window.Telegram.WebApp and @twa-dev/sdk WebApp
 if (import.meta.env.DEV) {
   if (!(window as any)["Telegram"]?.WebApp) {
@@ -35,9 +42,12 @@ function App() {
       try {
         console.log("Initializing Telegram WebApp...");
 
+        const Telegram = window.Telegram; // this is purely to deal with typescript typechecking,
+        // an issue that would not be present in JS
+
         // Use the SDK's WebApp consistently
-        WebApp.ready();
-        WebApp.expand();
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
         setIsTelegramReady(true);
 
         // Check for user data using the same WebApp instance
