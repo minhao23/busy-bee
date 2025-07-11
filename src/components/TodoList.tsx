@@ -12,9 +12,20 @@ type Task = {
 
 const TodoList: React.FC = () => {
   console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-  const getID = async () => {
-    const telegramUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user;
-    if (!telegramUser) throw new Error("Telegram user not found");
+  const getID = async (): Promise<string> => {
+    console.log("window.Telegram:", window);
+    if (typeof window === "undefined") {
+      console.error("Not in a browser environment");
+      throw new Error("No window object");
+    }
+
+    const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+    if (!telegramUser || !telegramUser.id) {
+      console.error("Telegram user not available", window.Telegram?.WebApp);
+      throw new Error("Telegram user not available");
+    }
+
     return telegramUser.id.toString();
   };
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -132,6 +143,7 @@ const TodoList: React.FC = () => {
   };
 
   useEffect(() => {
+    window.Telegram.WebApp.ready();
     fetchTasks();
     fetchCompletedTasks();
   }, []);
