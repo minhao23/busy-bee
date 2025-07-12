@@ -107,7 +107,7 @@
 }
 
 .session-counter {
-  font-size: 1rem;
+  font-size: 0.7rem;
   opacity: 0.8;
   background: rgba(255, 255, 255, 0.1);
   padding: 0.5rem 1rem;
@@ -120,17 +120,18 @@
   gap: 0.5rem;
   margin-bottom: 0rem;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 2rem;
+  border-radius: 1.5rem;
   padding: 0.25rem;
+  margin-bottom: 0.3rem;
 }
 
 .mode-button {
   flex: 1;
-  padding: 0.5rem 1rem;
+  padding: 0rem 0.8rem;
   border: none;
   background: none;
   color: rgba(255, 255, 255, 0.7);
-  border-radius: 0.5rem;
+  border-radius: 1.5rem;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -147,17 +148,18 @@
 }
 
 .timer-display {
-   width: auto;               /* don’t fix the width */
+  width: auto;               /* don’t fix the width */
   max-width: 90vw;           /* responsive on small screens */
   margin-top: 0rem auto;  
-  margin-bottom: 1rem;       /* center horizontally */
-  padding: 2rem;
+  margin-bottom: 0rem auto;       /* center horizontally */
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;    /* stack circle and controls vertically */
   justify-content: center;
   align-items: center;
   background-color: #73c0e449;
   border-radius: 1rem;
+  aspect-ratio: 1 / 1; 
 }
 
 .timer-circle {
@@ -206,20 +208,22 @@
 
 .timer-controls {
   display: flex;
+  justify-content: space-between;
   gap: 1rem;
-  justify-content: center;
+  width: 100%; /* full width of the parent */
+  margin-top: 0.3rem;
 }
 
 .control-button {
-  padding: 1rem 2rem;
+  flex: 1;
+  padding: 1rem 0;
   border: none;
   border-radius: 2rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 120px;
-  padding-top: 1rem;
+  text-align: center;
 }
 
 .control-button.primary {
@@ -243,172 +247,6 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Todo List Styles */
-.todo-list {
-  width: 100%;
-  max-width: 500px;
-}
-
-.todo-header {
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.todo-title {
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem;
-  color: #ffffff;
-}
-
-.todo-stats {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1rem;
-  border-radius: 2rem;
-  display: inline-block;
-}
-
-.todo-input-container {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.todo-input {
-  flex: 1;
-  padding: 1rem;
-  border: none;
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  color: #374151;
-  font-size: 1rem;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-.todo-input:focus {
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
-}
-
-.todo-input::placeholder {
-  color: #9ca3af;
-}
-
-.add-button {
-  padding: 1rem 1.5rem;
-  border: none;
-  border-radius: 1rem;
-  background: #ffffff;
-  color: #667eea;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.add-button:hover:not(:disabled) {
-  background: #f8fafc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.add-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.todo-items {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  opacity: 0.7;
-}
-
-.empty-state p {
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-.todo-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.todo-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
-}
-
-.todo-item.completed {
-  opacity: 0.6;
-}
-
-.todo-checkbox {
-  width: 24px;
-  height: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 6px;
-  background: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.todo-item.completed .todo-checkbox {
-  background: #ffffff;
-  color: #667eea;
-  border-color: #ffffff;
-}
-
-.todo-text {
-  flex: 1;
-  font-size: 1rem;
-  color: #ffffff;
-  text-align: left;
-}
-
-.todo-item.completed .todo-text {
-  text-decoration: line-through;
-}
-
-.delete-button {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(239, 68, 68, 0.2);
-  color: #ffffff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.delete-button:hover {
-  background: rgba(239, 68, 68, 0.4);
-  transform: scale(1.1);
-}
 
 /* Responsive Design */
 @media (max-width: 640px) {
@@ -435,13 +273,15 @@
   }
 
   .timer-controls {
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
   }
 
+
   .control-button {
-    width: 100%;
-    max-width: 200px;
+    font-size: 0.9rem;
+    padding: 0.8rem 0;
   }
 
   .todo-input-container {
@@ -450,6 +290,9 @@
 
   .add-button {
     width: 100%;
+  }
+  .mode-button{
+    font-size: 0.8rem;
   }
 }
 
@@ -464,18 +307,18 @@
   }
 
   .mode-selector {
-    flex-direction: column;
     gap: 0.25rem;
   }
 
   .mode-button {
     border-radius: 0.75rem;
+
   }
 }
 
 .close-button {
   position: absolute;
-  top: 1rem;
+  top: 0.5rem;
   right: 1rem;
   background: rgba(255, 255, 255, 0.3);
   color: white;
