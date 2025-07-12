@@ -166,19 +166,21 @@ const TodoList: React.FC = () => {
           placeholder="Enter task..."
           onKeyPress={(e) => e.key === "Enter" && addTask()}
         />
-        <select
-          value={selectedImportance}
-          onChange={(e) =>
-            setSelectedImportance(parseInt(e.target.value) as 1 | 2 | 3 | 4)
-          }
-        >
-          {quadrants.map((q) => (
-            <option key={q.id} value={q.id}>
-              {q.title}
-            </option>
-          ))}
-        </select>
-        <button onClick={addTask}>Add Task</button>
+        <div className="task-type-row">
+          <select
+            value={selectedImportance}
+            onChange={(e) =>
+              setSelectedImportance(parseInt(e.target.value) as 1 | 2 | 3 | 4)
+            }
+          >
+            {quadrants.map((q) => (
+              <option key={q.id} value={q.id}>
+                {q.title}
+              </option>
+            ))}
+          </select>
+          <button onClick={addTask}>Add Task</button>
+        </div>
       </div>
 
       <div className="quadrants-grid">
