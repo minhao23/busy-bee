@@ -52,7 +52,7 @@ const TodoList: React.FC = () => {
     const { data: Todo, error } = await supabase
       .from("Todo")
       .select("*")
-      .eq("user_uuid", user)
+      .eq("user_tele_id", user)
       .not("finished_at", "is", null) // Fetch only completed tasks
       .order("created_at", { ascending: false });
 
@@ -73,7 +73,7 @@ const TodoList: React.FC = () => {
     let { data: Todo, error } = await supabase
       .from("Todo")
       .select("*")
-      .eq("user_uuid", user)
+      .eq("user_tele_id", user)
       .is("finished_at", null)
       .order("created_at", { ascending: false });
 
@@ -85,15 +85,8 @@ const TodoList: React.FC = () => {
   const addTask = async () => {
     if (!newTaskName.trim()) return;
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      console.error("User not found", userError);
-      return;
-    }
+    const user = supabase.auth.getUser().then((u) => u.data?.user?.id);
+    const userId = await getID();
 
     const { data, error } = await supabase
       .from("Todo")
@@ -102,7 +95,8 @@ const TodoList: React.FC = () => {
           task_name: newTaskName.trim(),
           importance: selectedImportance,
           finished_at: null,
-          user_uuid: user.id,
+          user_uuid: user,
+          user_tele_id: userId,
         },
       ])
       .select();
