@@ -58,28 +58,26 @@ const initializeTelegramUser = async () => {
 
       const email = `${userId}@telegram.com`;
       const password = userId;
-      let { error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
+
+      // Try sign-up first
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
         options: {
           data: {
-            telegram_id: 1234567890,
+            telegram_id: telegramId,
           },
         },
       });
-      if (error) {
-        const { error: signupError } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (signupError) throw signupError;
 
-        // After sign-up, manually sign in again
-        const retry = await supabase.auth.signInWithPassword({
+      if (signUpError) {
+        // If already signed up, try sign-in
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (retry.error) throw retry.error;
+        console.log("signing in with password");
+        if (signInError) throw signInError;
       }
 
       // Confirm session
@@ -92,7 +90,8 @@ const initializeTelegramUser = async () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Telegram user missing from session");
-      userId = user.id; // Use authenticated Supabase ID
+
+      userId = user.id;
     }
 
     // Check for existing profile
