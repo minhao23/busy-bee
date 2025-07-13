@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
+import { v5 as uuidv5 } from "uuid";
 
 type Task = {
   id: number;
@@ -13,6 +14,10 @@ type Task = {
 const TodoList: React.FC = () => {
   console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
   const getID = async (): Promise<string> => {
+    console.log(
+      "Telegram initDataUnsafe:",
+      (window as any)?.Telegram?.WebApp?.initDataUnsafe
+    );
     console.log("window.Telegram:", window);
     if (typeof window === "undefined") {
       console.error("Not in a browser environment");
@@ -23,10 +28,12 @@ const TodoList: React.FC = () => {
 
     if (!telegramUser || !telegramUser.id) {
       console.error("Telegram user not available", window.Telegram?.WebApp);
-      throw new Error("Telegram user not available");
     }
 
-    return telegramUser.id.toString();
+    return uuidv5(
+      telegramUser.id.toString(),
+      "00000000-0000-0000-0000-000000000000"
+    );
   };
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
