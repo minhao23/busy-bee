@@ -30,10 +30,13 @@ const TodoList: React.FC = () => {
       console.error("Telegram user not available", window.Telegram?.WebApp);
     }
 
-    return uuidv5(
+    const id = uuidv5(
       telegramUser.id.toString(),
       "00000000-0000-0000-0000-000000000000"
     );
+
+    console.log("Generated user ID:", id);
+    return id;
   };
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
@@ -56,7 +59,7 @@ const TodoList: React.FC = () => {
     if (Todo) setCompletedTasks(Todo);
     if (error) console.error("Error fetching tasks:", error);
   };
-
+  //hii
   // Fetch tasks from Supabase
   const fetchTasks = async () => {
     // const session = supabase.auth.getSession();
@@ -71,8 +74,6 @@ const TodoList: React.FC = () => {
     let { data: Todo, error } = await supabase
       .from("Todo")
       .select("*")
-
-      // Filters
       .eq("user_uuid", user)
       .is("finished_at", null)
       .order("created_at", { ascending: false });
