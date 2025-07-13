@@ -59,7 +59,6 @@ const TodoList: React.FC = () => {
     if (Todo) setCompletedTasks(Todo);
     if (error) console.error("Error fetching tasks:", error);
   };
-  //hii
   // Fetch tasks from Supabase
   const fetchTasks = async () => {
     // const session = supabase.auth.getSession();
@@ -103,7 +102,7 @@ const TodoList: React.FC = () => {
           task_name: newTaskName.trim(),
           importance: selectedImportance,
           finished_at: null,
-          user_uuid: user.id, // ✅ now this is a string, not a Promise
+          user_uuid: user,
         },
       ])
       .select();
