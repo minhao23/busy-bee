@@ -92,6 +92,8 @@ const initializeTelegramUser = async () => {
       if (!user) throw new Error("Telegram user missing from session");
 
       userId = user.id;
+      console.log("Telegram user initialized:", user);
+      console.log("session:", session);
     }
 
     // Check for existing profile
