@@ -76,6 +76,7 @@ const initializeTelegramUser = async () => {
           email,
           password,
         });
+        console.log("signing in with password");
         if (signInError) throw signInError;
       }
 
