@@ -55,6 +55,10 @@ const initializeTelegramUser = async () => {
         tgUser.id.toString(),
         "00000000-0000-0000-0000-000000000000"
       );
+      console.log("Telegram user ID:", telegramId);
+      console.log("Telegram username:", username);
+      console.log("Generated user ID:", userId);
+      console.log("this is in auth");
 
       const email = `${userId}@telegram.com`;
       const password = userId;

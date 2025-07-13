@@ -102,7 +102,7 @@ const TodoList: React.FC = () => {
           task_name: newTaskName.trim(),
           importance: selectedImportance,
           finished_at: null,
-          user_uuid: user,
+          user_uuid: user.id,
         },
       ])
       .select();
