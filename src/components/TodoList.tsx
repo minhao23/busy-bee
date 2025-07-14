@@ -124,6 +124,15 @@ const TodoList: React.FC = () => {
 
   useEffect(() => {
     window.Telegram.WebApp.ready();
+    const access_token = sessionStorage.getItem("sb-access-token");
+    const refresh_token = sessionStorage.getItem("sb-refresh-token");
+
+    if (access_token && refresh_token) {
+      supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      });
+    }
     fetchTasks();
     fetchCompletedTasks();
   }, []);

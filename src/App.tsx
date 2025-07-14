@@ -48,16 +48,6 @@ function App() {
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
         setIsTelegramReady(true);
-
-        const access_token = sessionStorage.getItem("sb-access-token");
-        const refresh_token = sessionStorage.getItem("sb-refresh-token");
-        // If tokens are available, set the session in Supabase
-        if (access_token && refresh_token) {
-          await supabase.auth.setSession({
-            access_token,
-            refresh_token,
-          });
-        }
         // Else, we will initialise the user, and set the session (done in the initializeTelegramUser function)
         const user = await initializeTelegramUser();
         console.log("Telegram user initialized:", user);
