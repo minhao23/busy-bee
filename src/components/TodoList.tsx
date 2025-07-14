@@ -26,6 +26,7 @@ const TodoList: React.FC = () => {
       console.error("Telegram user not available");
       throw new Error("Telegram user not available");
     }
+    console.log("Telegram user ID:", telegramUser.id);
 
     return telegramUser.id; // use directly as a string
   };
