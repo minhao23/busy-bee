@@ -138,7 +138,7 @@ const TodoList: React.FC = () => {
     }
     fetchTasks();
     fetchCompletedTasks();
-  }, []);
+  });
 
   const quadrants = [
     { id: 1, title: "Urgent & Important", color: 1 },
