@@ -126,17 +126,27 @@ const TodoList: React.FC = () => {
 
   useEffect(() => {
     window.Telegram.WebApp.ready();
-    const access_token = sessionStorage.getItem("sb-access-token");
-    const refresh_token = sessionStorage.getItem("sb-refresh-token");
+    const initializeAuth = async () => {
+      // Wait for Supabase to restore session (if tokens exist)
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (access_token && refresh_token) {
-      console.log("Restoring session from storage");
-      supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      });
-      console.log("Session restored successfully");
-    }
+      if (!session) {
+        // Fallback: Try to restore from localStorage
+        const access_token = localStorage.getItem("sb-access-token");
+        const refresh_token = localStorage.getItem("sb-refresh-token");
+
+        if (access_token && refresh_token) {
+          await supabase.auth.setSession({ access_token, refresh_token });
+        } else {
+          console.error("No valid session found");
+          return;
+        }
+      }
+    };
+
+    initializeAuth();
     fetchTasks();
     fetchCompletedTasks();
   }, []);
