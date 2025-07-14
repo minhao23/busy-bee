@@ -62,6 +62,7 @@ const TodoList: React.FC = () => {
   };
 
   const addTask = async () => {
+    console.log("session storage:", sessionStorage);
     const sessionResult = await supabase.auth.getSession();
     console.log("session:", sessionResult);
     if (!newTaskName.trim()) return;
