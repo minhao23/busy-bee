@@ -89,6 +89,12 @@ const initializeTelegramUser = async () => {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) throw new Error("Telegram user auth session missing");
+      else {
+        const { access_token, refresh_token } = session;
+
+        sessionStorage.setItem("sb-access-token", access_token);
+        sessionStorage.setItem("sb-refresh-token", refresh_token);
+      }
 
       const {
         data: { user },

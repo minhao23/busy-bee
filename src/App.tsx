@@ -4,6 +4,7 @@ import WebApp from "@twa-dev/sdk"; // This is the correct import
 import TodoList from "./components/TodoList";
 import "./App.css";
 import { initializeTelegramUser } from "./auth";
+import supabase from "./utils/supabase";
 
 declare global {
   interface Window {
@@ -42,25 +43,22 @@ function App() {
       try {
         console.log("Initializing Telegram WebApp...");
 
-        const Telegram = window.Telegram; // this is purely to deal with typescript typechecking,
-        // an issue that would not be present in JS
+        const Telegram = window.Telegram;
 
-        // Use the SDK's WebApp consistently
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
         setIsTelegramReady(true);
 
-        // Check for user data using the same WebApp instance
-        // if (WebApp.initDataUnsafe?.user) {
-        //   console.log("Telegram user detected, initializing...");
-        //   const user = await initializeTelegramUser();
-        //   console.log("Telegram user initialized:", user);
-        // } else {
-        //   console.log("No Telegram user data available");
-        // }
-
-        //Above code is commented out to avoid unnecessary calls during development
-
+        const access_token = sessionStorage.getItem("sb-access-token");
+        const refresh_token = sessionStorage.getItem("sb-refresh-token");
+        // If tokens are available, set the session in Supabase
+        if (access_token && refresh_token) {
+          await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+        }
+        // Else, we will initialise the user, and set the session (done in the initializeTelegramUser function)
         const user = await initializeTelegramUser();
         console.log("Telegram user initialized:", user);
       } catch (error) {
@@ -70,7 +68,6 @@ function App() {
 
     initTelegram();
   }, []);
-
   return (
     <div className="app">
       <header className="app-header">
