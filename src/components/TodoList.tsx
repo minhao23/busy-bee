@@ -7,37 +7,11 @@ type Task = {
   id: number;
   created_at: string;
   finished_at: string | null;
-  importance: number; // 1-4 for Eisenhower quadrants
+  importance: number;
   task_name: string;
 };
 
 const TodoList: React.FC = () => {
-  console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-  const getID = async (): Promise<string> => {
-    console.log(
-      "Telegram initDataUnsafe:",
-      (window as any)?.Telegram?.WebApp?.initDataUnsafe
-    );
-    console.log("window.Telegram:", window);
-    if (typeof window === "undefined") {
-      console.error("Not in a browser environment");
-      throw new Error("No window object");
-    }
-
-    const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-
-    if (!telegramUser || !telegramUser.id) {
-      console.error("Telegram user not available", window.Telegram?.WebApp);
-    }
-
-    const id = uuidv5(
-      telegramUser.id.toString(),
-      "00000000-0000-0000-0000-000000000000"
-    );
-
-    console.log("Generated user ID:", id);
-    return id;
-  };
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
@@ -45,35 +19,25 @@ const TodoList: React.FC = () => {
     1
   );
 
-  const fetchCompletedTasks = async () => {
-    const user = await getID();
+  const getID = async (): Promise<string> => {
+    const telegramUser = (window as any)?.Telegram?.WebApp?.initDataUnsafe
+      ?.user;
+    if (!telegramUser || !telegramUser.id) {
+      console.error("Telegram user not available");
+      throw new Error("Telegram user not available");
+    }
 
-    // Fetch tasks from Supabase
+    return telegramUser.id; // use directly as a string
+  };
+
+  // ✅ Fetches uncompleted tasks for the current user
+  const fetchTasks = async () => {
+    const userTeleId = await getID();
+
     const { data: Todo, error } = await supabase
       .from("Todo")
       .select("*")
-      .eq("user_tele_id", user)
-      .not("finished_at", "is", null) // Fetch only completed tasks
-      .order("created_at", { ascending: false });
-
-    if (Todo) setCompletedTasks(Todo);
-    if (error) console.error("Error fetching tasks:", error);
-  };
-  // Fetch tasks from Supabase
-  const fetchTasks = async () => {
-    // const session = supabase.auth.getSession();
-    // console.log("Session:", session);
-    // const user = supabase.auth.getUser();
-    // console.log("User:", user);
-    // console.log(
-    //   "auth.id:",
-    //   supabase.auth.getUser().then((u) => u.data?.user?.id)
-    // );
-    const user = await getID();
-    let { data: Todo, error } = await supabase
-      .from("Todo")
-      .select("*")
-      .eq("user_tele_id", user)
+      .eq("user_tele_id", userTeleId)
       .is("finished_at", null)
       .order("created_at", { ascending: false });
 
@@ -81,12 +45,26 @@ const TodoList: React.FC = () => {
     if (error) console.error("Error fetching tasks:", error);
   };
 
-  // Add new task
+  // ✅ Fetches completed tasks for the current user
+  const fetchCompletedTasks = async () => {
+    const userTeleId = await getID();
+
+    const { data: Todo, error } = await supabase
+      .from("Todo")
+      .select("*")
+      .eq("user_tele_id", userTeleId)
+      .not("finished_at", "is", null)
+      .order("created_at", { ascending: false });
+
+    if (Todo) setCompletedTasks(Todo);
+    if (error) console.error("Error fetching completed tasks:", error);
+  };
+
+  // ✅ Adds a new task
   const addTask = async () => {
     if (!newTaskName.trim()) return;
 
-    const user = supabase.auth.getUser().then((u) => u.data?.user?.id);
-    const userId = await getID();
+    const userTeleId = await getID();
 
     const { data, error } = await supabase
       .from("Todo")
@@ -95,11 +73,11 @@ const TodoList: React.FC = () => {
           task_name: newTaskName.trim(),
           importance: selectedImportance,
           finished_at: null,
-          user_uuid: user,
-          user_tele_id: userId,
+          user_tele_id: userTeleId,
         },
       ])
       .select();
+
     if (data) {
       setTasks([...data, ...tasks]);
       setNewTaskName("");
@@ -109,7 +87,7 @@ const TodoList: React.FC = () => {
     }
   };
 
-  // Toggle task completion
+  // ✅ Toggles task completion
   const toggleTaskCompletion = async (taskId: number) => {
     const task =
       tasks.find((t) => t.id === taskId) ||
@@ -126,15 +104,14 @@ const TodoList: React.FC = () => {
 
     if (data) {
       setTasks(tasks.map((t) => (t.id === taskId ? data[0] : t)));
-      await new Promise((resolve) => setTimeout(resolve, 300)); //delay for animation
-      fetchTasks(); // Refresh tasks
-      fetchCompletedTasks(); // Refresh completed tasks
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      fetchTasks();
+      fetchCompletedTasks();
     }
   };
 
-  // Delete task
+  // ✅ Deletes a task
   const deleteTask = async (taskId: number) => {
-    console.log("Deleting task with ID:", taskId);
     const { error } = await supabase.from("Todo").delete().eq("id", taskId);
 
     if (!error) {
@@ -149,7 +126,6 @@ const TodoList: React.FC = () => {
     fetchCompletedTasks();
   }, []);
 
-  // Quadrant definitions
   const quadrants = [
     { id: 1, title: "Urgent & Important", color: 1 },
     { id: 2, title: "Not Urgent & Important", color: 2 },
@@ -218,23 +194,21 @@ const TodoList: React.FC = () => {
           </div>
         ))}
       </div>
+
       <div className="completed">
         <h3>Completed Tasks</h3>
         <div className="tasks-list">
-          {completedTasks.map((completedTask) => (
-            <div
-              key={completedTask.id}
-              className={`task ${completedTask.finished_at ? "completed" : ""}`}
-            >
+          {completedTasks.map((task) => (
+            <div key={task.id} className="task completed">
               <input
                 type="checkbox"
-                checked={!!completedTask.finished_at}
-                onChange={() => toggleTaskCompletion(completedTask.id)}
+                checked={!!task.finished_at}
+                onChange={() => toggleTaskCompletion(task.id)}
               />
-              <span>{completedTask.task_name}</span>
+              <span>{task.task_name}</span>
               <button
                 className="delete-btn"
-                onClick={() => deleteTask(completedTask.id)}
+                onClick={() => deleteTask(task.id)}
               ></button>
             </div>
           ))}
