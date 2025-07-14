@@ -63,7 +63,7 @@ const TodoList: React.FC = () => {
 
   const addTask = async () => {
     console.log("session storage:", sessionStorage);
-    const sessionResult = await supabase.auth.getSession();
+    const sessionResult = supabase.auth.getSession();
     console.log("session:", sessionResult);
     if (!newTaskName.trim()) return;
 
@@ -129,10 +129,12 @@ const TodoList: React.FC = () => {
     const refresh_token = sessionStorage.getItem("sb-refresh-token");
 
     if (access_token && refresh_token) {
+      console.log("Restoring session from storage");
       supabase.auth.setSession({
         access_token,
         refresh_token,
       });
+      console.log("Session restored successfully");
     }
     fetchTasks();
     fetchCompletedTasks();
