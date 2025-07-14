@@ -62,9 +62,10 @@ const TodoList: React.FC = () => {
   };
 
   const addTask = async () => {
-    console.log("session storage:", sessionStorage);
-    const sessionResult = supabase.auth.getSession();
-    console.log("session:", sessionResult);
+    supabase.auth.setSession({
+      access_token: sessionStorage.getItem("sb-access-token") || "",
+      refresh_token: sessionStorage.getItem("sb-refresh-token") || "",
+    });
     if (!newTaskName.trim()) return;
 
     const userTeleId = await getID();
@@ -138,7 +139,7 @@ const TodoList: React.FC = () => {
     }
     fetchTasks();
     fetchCompletedTasks();
-  });
+  }, []);
 
   const quadrants = [
     { id: 1, title: "Urgent & Important", color: 1 },
