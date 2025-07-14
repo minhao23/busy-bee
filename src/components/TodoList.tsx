@@ -61,8 +61,9 @@ const TodoList: React.FC = () => {
     if (error) console.error("Error fetching completed tasks:", error);
   };
 
-  // ✅ Adds a new task
   const addTask = async () => {
+    const sessionResult = await supabase.auth.getSession();
+    console.log("session:", sessionResult);
     if (!newTaskName.trim()) return;
 
     const userTeleId = await getID();
