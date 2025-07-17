@@ -63,10 +63,6 @@ const TodoList: React.FC = () => {
   };
 
   const addTask = async () => {
-    supabase.auth.setSession({
-      access_token: sessionStorage.getItem("sb-access-token") || "",
-      refresh_token: sessionStorage.getItem("sb-refresh-token") || "",
-    });
     if (!newTaskName.trim()) return;
 
     const userTeleId = await getID();
