@@ -13,6 +13,7 @@ const PomodoroTimer: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const intervalRef = useRef<number | null>(null);
+  const alarmRef = useRef<HTMLAudioElement | null>(null);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -37,8 +38,18 @@ const PomodoroTimer: React.FC = () => {
     };
   }, [isActive, timeLeft]);
 
+  useEffect(() => {
+    alarmRef.current = new Audio("../assets/audio_files/mixkit-morning-clock-alarm-1003.wav")
+  }, []);
+
   const handleTimerComplete = () => {
     setIsActive(false);
+
+    // Play alarm
+    if (alarmRef.current) {
+      alarmRef.current.currentTime = 0;
+      alarmRef.current.play().catch((e) => console.error("Alarm play failed: ", e));
+    }
 
     if (mode === "work") {
       const newCompletedSessions = completedSessions + 1;
