@@ -125,6 +125,7 @@
 
 /* Delete Button */
 .delete-btn {
+  flex: 0 0 auto;
   background: transparent;
   border: none;
   color: #f44336;
@@ -189,7 +190,8 @@
 .task {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 0.5rem;
   padding: 10px;
   margin-bottom: 10px;
   background: rgb(197, 170, 225);
@@ -212,8 +214,6 @@
   font-size: 0.7rem;
   flex-shrink: 0;
   color: #888;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* Completed Tasks Section */
@@ -286,7 +286,7 @@
   }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 580px) {
   .app-title {
     font-size: 1.5rem;
   }
@@ -305,8 +305,8 @@
     grid-template-rows: auto auto; /* Row 1 for header, Row 2 for date */
     align-items: center; /* Vertically align items in their grid cells for the first row */
     column-gap: 5px;
-    row-gap: 2px; /* Space between items on the first row */
-    padding: 5px 6px;
+    row-gap: 0px; /* Space between items on the first row */
+    padding: 1px 5px;
   }
 
   .task > input[type="checkbox"] {
@@ -331,9 +331,6 @@
   .task-date {
     grid-column: 2; /* Start at column 2, which aligns with the task name */
     grid-row: 2; /* Place on the second row */
-    margin-top: 4px; /* Space from the first row */
-    color: gray;
-    /* Remove any previous margin-left if it exists, as grid handles alignment */
     margin-left: 0;
   }
 
