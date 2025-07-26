@@ -3,17 +3,24 @@ import { TimerState, TimerMode } from "../types";
 
 const TIMER_DURATIONS = {
   work: 25 * 60, // 25 minutes
-  shortBreak: 5 * 60, // 5 minutes
+  shortBreak: 5, // 5 minutes
   longBreak: 15 * 60, // 15 minutes
 } as const;
 
-const PomodoroTimer: React.FC = () => {
+const ALARM_DURATION = 60; // 1 minute
+
+interface PomodoroTimerProps {
+  setTabSwitchBlocked: (blocked: boolean) => void;
+}
+
+const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ setTabSwitchBlocked }) => {
   const [mode, setMode] = useState<TimerMode>("work");
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATIONS.work);
   const [isActive, setIsActive] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const intervalRef = useRef<number | null>(null);
   const alarmRef = useRef<HTMLAudioElement | null>(null);
+  const alarmTimerRef = useRef<number | null>(null);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -38,18 +45,40 @@ const PomodoroTimer: React.FC = () => {
     };
   }, [isActive, timeLeft]);
 
+  // Timer alarm
   useEffect(() => {
-    alarmRef.current = new Audio("../assets/audio_files/mixkit-morning-clock-alarm-1003.wav")
+    alarmRef.current = new Audio("/audio_files/mixkit-morning-clock-alarm-1003.wav");
+    alarmRef.current.loop = true;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (alarmTimerRef.current) {
+        clearTimeout(alarmTimerRef.current);
+      }
+    };
   }, []);
 
   const handleTimerComplete = () => {
     setIsActive(false);
+    setTabSwitchBlocked(true);
 
     // Play alarm
     if (alarmRef.current) {
       alarmRef.current.currentTime = 0;
       alarmRef.current.play().catch((e) => console.error("Alarm play failed: ", e));
     }
+
+    // Play alarm until timer is up
+    alarmTimerRef.current = window.setTimeout(() => {
+      stopAlarm();
+      handleAlarmDismiss();
+    }, ALARM_DURATION * 1000);
+  };
+
+  const handleAlarmDismiss = () => {
+    stopAlarm();
+    setTabSwitchBlocked(false);
 
     if (mode === "work") {
       const newCompletedSessions = completedSessions + 1;
@@ -64,7 +93,7 @@ const PomodoroTimer: React.FC = () => {
       setMode("work");
       setTimeLeft(TIMER_DURATIONS.work);
     }
-  };
+  }
 
   const toggleTimer = () => {
     setIsActive(!isActive);
@@ -89,6 +118,18 @@ const PomodoroTimer: React.FC = () => {
     const totalTime = TIMER_DURATIONS[mode];
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
+
+  const stopAlarm = () => {
+    if (alarmRef.current) {
+      alarmRef.current.pause();
+      alarmRef.current.currentTime = 0;
+    }
+  
+    if (alarmTimerRef.current) {
+      clearTimeout(alarmTimerRef.current); // prevent double-trigger
+      alarmTimerRef.current = null;
+    }
+  }
 
   return (
     <div className="pomodoro-timer">
@@ -172,9 +213,15 @@ const PomodoroTimer: React.FC = () => {
         >
           {isActive ? "Pause" : "Start"}
         </button>
-        <button className="control-button secondary" onClick={resetTimer}>
-          Reset
-        </button>
+        {timeLeft > 0 ? (
+          <button className="control-button secondary" onClick={resetTimer}>
+            Reset
+          </button>
+        ) : ( 
+          <button className="control-button secondary" onClick={handleAlarmDismiss}>
+            Dismiss
+          </button>   
+        )} 
       </div>
     </div>
   );

@@ -37,6 +37,7 @@ if (import.meta.env.DEV) {
 function App() {
   const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
   const [isTelegramReady, setIsTelegramReady] = useState(false);
+  const [tabSwitchBlocked, setTabSwitchBlocked] = useState(false);
 
   useEffect(() => {
     const initTelegram = async () => {
@@ -68,7 +69,9 @@ function App() {
       <nav className="tab-navigation">
         <button
           className={`tab-button ${activeTab === "timer" ? "active" : ""}`}
-          onClick={() => setActiveTab("timer")}
+          onClick={() => {
+            if (!tabSwitchBlocked) setActiveTab("timer");
+          }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <circle
@@ -88,7 +91,10 @@ function App() {
         </button>
         <button
           className={`tab-button ${activeTab === "todos" ? "active" : ""}`}
-          onClick={() => setActiveTab("todos")}
+          onClick={() => {
+            if (!tabSwitchBlocked) setActiveTab("todos");
+            else alert("Dismiss the alarm!");
+          }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
@@ -111,7 +117,11 @@ function App() {
       </nav>
 
       <main className="app-main">
-        {activeTab === "timer" ? <PomodoroTimer /> : <TodoList />}
+        {activeTab === "timer" ? (
+          <PomodoroTimer setTabSwitchBlocked={setTabSwitchBlocked}/> 
+        ) : (
+          <TodoList />
+        )}
         {isTelegramReady && (
           <button className="close-button" onClick={() => WebApp.close()}>
             Close
