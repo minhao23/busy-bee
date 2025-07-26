@@ -130,6 +130,7 @@ const initializeTelegramUser = async () => {
       .select()
       .single();
 
+    console.log("username:", username);
     if (insertError) throw insertError;
     return newUser;
   } catch (error) {
