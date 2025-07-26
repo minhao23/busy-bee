@@ -20,11 +20,14 @@ const TodoList: React.FC = () => {
   );
 
   const getID = async (): Promise<string> => {
-    const telegramUser = (window as any)?.Telegram?.WebApp?.initDataUnsafe
-      ?.user;
+    var telegramUser = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.user;
     if (!telegramUser || !telegramUser.id) {
-      console.error("Telegram user not available");
-      throw new Error("Telegram user not available");
+      // console.error("Telegram user not available");
+      // throw new Error("Telegram user not available");
+
+      telegramUser = {
+        id: 101010101,
+      }; // this is purely for dev, do not use in production
     }
     console.log("Telegram user ID:", telegramUser.id);
     console.log("data type of telegramUser.id:", typeof telegramUser.id);
@@ -202,7 +205,7 @@ const TodoList: React.FC = () => {
                       checked={!!task.finished_at}
                       onChange={() => toggleTaskCompletion(task.id)}
                     />
-                    <span>{task.task_name}</span>
+                    <span className="task-name">{task.task_name}</span>
                     <span className="task-date">
                       {new Date(task.created_at).toLocaleDateString()}
                     </span>
