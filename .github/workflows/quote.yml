@@ -1,0 +1,27 @@
+name: Insert Quote to Supabase
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # every day at 2am UTC
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  insert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch quote and insert to Supabase
+        run: |
+          curl -s https://api.quotable.io/random > quote.json
+          echo "Fetched quote:"
+          cat quote.json
+
+          export CONTENT=$(jq -r '.content' quote.json)
+          export AUTHOR=$(jq -r '.author' quote.json)
+          export ID=$(jq -r '._id' quote.json)
+          export TAGS=$(jq -c '.tags' quote.json)
+
+          curl -X POST "https://your-supabase-project.supabase.co/rest/v1/quotes" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"quote\": \"$CONTENT\", \"author\": \"$AUTHOR\"}"
