@@ -20,8 +20,9 @@ jobs:
           export ID=$(jq -r '._id' quote.json)
           export TAGS=$(jq -c '.tags' quote.json)
 
-          curl -X POST "https://your-supabase-project.supabase.co/rest/v1/quotes" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE }}" \
+          curl -X POST 'https://udlafhtmrknawcgqcohg.supabase.co/rest/v1/Quotes' \
+            -H "apikey: SUPABASE_KEY" \
+            -H "Authorization: Bearer SUPABASE_KEY" \
             -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
             -d "{\"quote\": \"$CONTENT\", \"author\": \"$AUTHOR\"}"
