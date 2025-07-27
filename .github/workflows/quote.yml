@@ -11,14 +11,12 @@ jobs:
     steps:
       - name: Fetch quote and insert to Supabase
         run: |
-          curl -s https://api.quotable.io/random > quote.json
+          curl https://zenquotes.io?api=random > quote.json
           echo "Fetched quote:"
           cat quote.json
-
-          export CONTENT=$(jq -r '.content' quote.json)
-          export AUTHOR=$(jq -r '.author' quote.json)
-          export ID=$(jq -r '._id' quote.json)
-          export TAGS=$(jq -c '.tags' quote.json)
+          QUOTE_FILE="quote.json"
+          export CONTENT=$(jq -r '.[0].q' "$QUOTE_FILE")
+          export AUTHOR=$(jq -r '.[0].a' "$QUOTE_FILE")
 
           curl -X POST 'https://udlafhtmrknawcgqcohg.supabase.co/rest/v1/Quotes' \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
