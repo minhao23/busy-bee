@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
 import { v5 as uuidv5 } from "uuid";
@@ -18,6 +18,21 @@ const TodoList: React.FC = () => {
   const [selectedImportance, setSelectedImportance] = useState<1 | 2 | 3 | 4>(
     1
   );
+
+  // Sound effects
+  const soundRefs = useRef<{
+    add: HTMLAudioElement | null;
+    complete: HTMLAudioElement | null;
+    remove: HTMLAudioElement | null;
+    cancel: HTMLAudioElement | null;
+    emptyAdd: HTMLAudioElement | null;
+  }>({
+    add: null,
+    complete: null, 
+    remove: null,
+    cancel: null,
+    emptyAdd: null,
+  })
 
   const getID = async (): Promise<string> => {
     var telegramUser = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.user;
@@ -66,9 +81,20 @@ const TodoList: React.FC = () => {
   };
 
   const addTask = async () => {
-    if (!newTaskName.trim()) return;
+    if (!newTaskName.trim()) {
+      if (soundRefs.current && soundRefs.current.emptyAdd) {
+        soundRefs.current.emptyAdd.currentTime = 0
+        soundRefs.current.emptyAdd.play().catch((e) => console.error("failed to play wrong add sound", e))
+      }
+      return;
+    }
 
     const userTeleId = await getID();
+
+    if (soundRefs.current && soundRefs.current.add) {
+      soundRefs.current.add.currentTime = 0
+      soundRefs.current.add.play().catch((e) => console.error("failed to play add sound", e))
+    }
 
     const { data, error } = await supabase
       .from("Todo")
@@ -100,12 +126,17 @@ const TodoList: React.FC = () => {
 
     const newFinishedAt = task.finished_at ? null : new Date().toISOString();
 
+    if (soundRefs.current && soundRefs.current.complete) {
+      soundRefs.current.complete.currentTime = 0
+      soundRefs.current.complete.play().catch((e) => console.error("failed to play complete sound", e))
+    }
+
     const { data, error } = await supabase
       .from("Todo")
       .update({ finished_at: newFinishedAt })
       .eq("id", taskId)
       .select();
-
+    
     if (data) {
       setTasks(tasks.map((t) => (t.id === taskId ? data[0] : t)));
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -119,6 +150,15 @@ const TodoList: React.FC = () => {
     const { error } = await supabase.from("Todo").delete().eq("id", taskId);
 
     if (!error) {
+      const completed = completedTasks.some((t) => t.id == taskId)
+      if (completed && soundRefs.current && soundRefs.current.remove) {
+        soundRefs.current.remove.currentTime = 0
+        soundRefs.current.remove.play().catch((e) => console.error("failed to play removed sound", e))
+      } else if (!completed && soundRefs.current && soundRefs.current.cancel) {
+        soundRefs.current.cancel.currentTime = 0
+        soundRefs.current.cancel.play().catch((e) => console.error("failed to play cancel sound", e))
+      }
+
       setTasks(tasks.filter((t) => t.id !== taskId));
       setCompletedTasks(completedTasks.filter((t) => t.id !== taskId));
     }
@@ -150,6 +190,15 @@ const TodoList: React.FC = () => {
     fetchTasks();
     fetchCompletedTasks();
   }, []);
+
+  // Init sound effect objects
+  useEffect(() => {
+    soundRefs.current.add = new Audio("audio_files/sharp-pop-328170.mp3")
+    soundRefs.current.complete = new Audio("audio_files/game-level-complete-143022.mp3")
+    soundRefs.current.remove = new Audio("audio_files/mag-remove-92075.mp3")
+    soundRefs.current.cancel = new Audio("audio_files/cancel-116016.mp3")
+    soundRefs.current.emptyAdd = new Audio("audio_files/wronganswer-37702.mp3")
+  }, [])
 
   const quadrants = [
     { id: 1, title: "Urgent & Important", color: 1 },
