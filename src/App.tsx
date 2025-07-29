@@ -5,6 +5,7 @@ import TodoList from "./components/TodoList";
 import "./App.css";
 import { initializeTelegramUser } from "./auth";
 import supabase from "./utils/supabase";
+import fetchQuote from "./components/Quotes";
 
 declare global {
   interface Window {
@@ -38,6 +39,8 @@ function App() {
   const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
   const [isTelegramReady, setIsTelegramReady] = useState(false);
   const [tabSwitchBlocked, setTabSwitchBlocked] = useState(false);
+  const [quote, setQuote] = useState("");
+  const [author, setAuthor] = useState("");
 
   useEffect(() => {
     const initTelegram = async () => {
@@ -55,17 +58,20 @@ function App() {
       } catch (error) {
         console.error("Initialization error:", error);
       }
+      const temp = await fetchQuote();
+      if (temp?.[0]) {
+        setQuote(temp[0].quote);
+        setAuthor(temp[0].author);
+      } else {
+        setQuote("Let's get to work!");
+        setAuthor("");
+      }
     };
 
     initTelegram();
   }, []);
   return (
     <div className="app">
-      <header className="app-header">
-        <h1 className="app-title">Let's get to work!</h1>
-        <p className="app-subtitle">use zen quotes api</p>
-      </header>
-
       <nav className="tab-navigation">
         <button
           className={`tab-button ${activeTab === "timer" ? "active" : ""}`}
@@ -117,16 +123,12 @@ function App() {
       </nav>
 
       <main className="app-main">
-        {activeTab === "timer" ? (
-          <PomodoroTimer setTabSwitchBlocked={setTabSwitchBlocked}/> 
-        ) : (
+        <div style={{ display: activeTab === "timer" ? "block" : "none" }}>
+          <PomodoroTimer setTabSwitchBlocked={setTabSwitchBlocked} />
+        </div>
+        <div style={{ display: activeTab === "todos" ? "block" : "none" }}>
           <TodoList />
-        )}
-        {isTelegramReady && (
-          <button className="close-button" onClick={() => WebApp.close()}>
-            Close
-          </button>
-        )}
+        </div>
       </main>
     </div>
   );
