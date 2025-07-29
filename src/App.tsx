@@ -38,7 +38,6 @@ if (import.meta.env.DEV) {
 function App() {
   const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
   const [isTelegramReady, setIsTelegramReady] = useState(false);
-  const [tabSwitchBlocked, setTabSwitchBlocked] = useState(false);
   const [quote, setQuote] = useState("");
   const [author, setAuthor] = useState("");
 
@@ -75,9 +74,7 @@ function App() {
       <nav className="tab-navigation">
         <button
           className={`tab-button ${activeTab === "timer" ? "active" : ""}`}
-          onClick={() => {
-            if (!tabSwitchBlocked) setActiveTab("timer");
-          }}
+          onClick={() => { setActiveTab("timer"); }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <circle
@@ -97,10 +94,7 @@ function App() {
         </button>
         <button
           className={`tab-button ${activeTab === "todos" ? "active" : ""}`}
-          onClick={() => {
-            if (!tabSwitchBlocked) setActiveTab("todos");
-            else alert("Dismiss the alarm!");
-          }}
+          onClick={() => { setActiveTab("todos"); }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
@@ -124,7 +118,7 @@ function App() {
 
       <main className="app-main">
         <div style={{ display: activeTab === "timer" ? "block" : "none" }}>
-          <PomodoroTimer setTabSwitchBlocked={setTabSwitchBlocked} />
+          <PomodoroTimer/>
         </div>
         <div style={{ display: activeTab === "todos" ? "block" : "none" }}>
           <TodoList />
