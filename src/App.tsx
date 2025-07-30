@@ -5,7 +5,7 @@ import TodoList from "./components/TodoList";
 import "./App.css";
 import { initializeTelegramUser } from "./auth";
 import supabase from "./utils/supabase";
-import fetchQuote from "./components/Quotes";
+import Dashboard from "./components/Dashboard";
 
 declare global {
   interface Window {
@@ -39,8 +39,6 @@ function App() {
   const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
   const [isTelegramReady, setIsTelegramReady] = useState(false);
   const [tabSwitchBlocked, setTabSwitchBlocked] = useState(false);
-  const [quote, setQuote] = useState("");
-  const [author, setAuthor] = useState("");
 
   useEffect(() => {
     const initTelegram = async () => {
@@ -57,14 +55,6 @@ function App() {
         console.log("Telegram user initialized:", user);
       } catch (error) {
         console.error("Initialization error:", error);
-      }
-      const temp = await fetchQuote();
-      if (temp?.[0]) {
-        setQuote(temp[0].quote);
-        setAuthor(temp[0].author);
-      } else {
-        setQuote("Let's get to work!");
-        setAuthor("");
       }
     };
 
@@ -124,7 +114,7 @@ function App() {
 
       <main className="app-main">
         <div style={{ display: activeTab === "timer" ? "block" : "none" }}>
-          <PomodoroTimer setTabSwitchBlocked={setTabSwitchBlocked} />
+          <Dashboard />
         </div>
         <div style={{ display: activeTab === "todos" ? "block" : "none" }}>
           <TodoList />
