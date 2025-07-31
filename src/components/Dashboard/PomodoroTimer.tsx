@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { TimerState, TimerMode } from "../types";
-import "./Dashboard.css";
+import { TimerState, TimerMode } from "../../types";
+import "../Dashboard.css";
 
 const TIMER_DURATIONS = {
   work: 25 * 60, // 25 minutes

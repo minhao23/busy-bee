@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import PomodoroTimer from "./components/PomodoroTimer";
+import PomodoroTimer from "./components/Dashboard/PomodoroTimer";
 import WebApp from "@twa-dev/sdk"; // This is the correct import
 import TodoList from "./components/TodoList";
 import "./App.css";

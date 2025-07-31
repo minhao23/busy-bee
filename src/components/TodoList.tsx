@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
+import { Task } from "../types";
 import { v5 as uuidv5 } from "uuid";
-
-type Task = {
-  id: number;
-  created_at: string;
-  finished_at: string | null;
-  importance: number;
-  task_name: string;
-};
 
 const TodoList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -50,7 +43,6 @@ const TodoList: React.FC = () => {
     if (error) console.error("Error fetching tasks:", error);
   };
 
-  // ✅ Fetches completed tasks for the current user
   const fetchCompletedTasks = async () => {
     const userTeleId = await getID();
 
