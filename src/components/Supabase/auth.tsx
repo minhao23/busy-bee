@@ -1,4 +1,4 @@
-import supabase from "./utils/supabase";
+import supabase from "../../utils/supabase";
 import WebApp from "@twa-dev/sdk";
 import { v5 as uuidv5 } from "uuid";
 

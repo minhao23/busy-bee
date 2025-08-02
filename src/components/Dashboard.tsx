@@ -5,42 +5,13 @@ import "./Dashboard.css";
 import supabase from "../utils/supabase";
 import { Task } from "../types";
 import UpcomingTasks from "./Dashboard/UpcomingTasks";
+import { useTasks } from "./Supabase/TaskLogic";
 
 const Dashboard = ({}) => {
   const [quote, setQuote] = useState("");
   const [author, setAuthor] = useState("");
-  const [fetchingTasks, setFetchingTasks] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  const getID = async (): Promise<string> => {
-    var telegramUser = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.user;
-    if (!telegramUser || !telegramUser.id) {
-      // console.error("Telegram user not available");
-      // throw new Error("Telegram user not available");
-
-      telegramUser = {
-        id: 101010101,
-      }; // this is purely for dev, do not use in production
-    }
-    console.log("Telegram user ID:", telegramUser.id);
-    console.log("data type of telegramUser.id:", typeof telegramUser.id);
-
-    return telegramUser.id; // use directly as a string
-  };
-
-  const fetchTasks = async () => {
-    const userTeleId = await getID();
-
-    const { data: Todo, error } = await supabase
-      .from("Todo")
-      .select("*")
-      .eq("user_tele_id", userTeleId)
-      .is("finished_at", null)
-      .order("importance", { ascending: true });
-
-    if (Todo) setTasks(Todo);
-    if (error) console.error("Error fetching tasks:", error);
-  };
+  const { topTasks, fetchTopTasks } = useTasks();
+  const { tasks } = useTasks();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,20 +26,26 @@ const Dashboard = ({}) => {
     };
 
     fetchData();
-    fetchTasks().finally(() => setFetchingTasks(false));
+    fetchTopTasks();
   }, []);
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-left">
-        <PomodoroTimer setTabSwitchBlocked={() => false} />
-      </div>
-      <div className="dashboard-right">
-        <UpcomingTasks tasks={tasks} />
-        <div className="quote-box">
-          <p>{quote}</p>
-          <p>- {author}</p>
+      <div className="dashboard-main">
+        <div className="dashboard-left">
+          <PomodoroTimer setTabSwitchBlocked={() => false} />
         </div>
+        <div className="dashboard-right">
+          <UpcomingTasks tasks={topTasks} />
+          <div className="quote-box">
+            <p>{quote}</p>
+            <p>- {author}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="stats">
+        <div className="stat-item">Total Tasks: {tasks.length}</div>
       </div>
     </div>
   );
