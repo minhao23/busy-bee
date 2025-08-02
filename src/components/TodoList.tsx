@@ -1,69 +1,16 @@
 import React, { useState, useEffect } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
+import { Task } from "../types";
 import { v5 as uuidv5 } from "uuid";
-
-type Task = {
-  id: number;
-  created_at: string;
-  finished_at: string | null;
-  importance: number;
-  task_name: string;
-};
+import { getID, useTasks } from "./Supabase/TaskLogic";
 
 const TodoList: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
-  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
+  const { setTasks, tasks, fetchTasks, completedTasks } = useTasks();
   const [selectedImportance, setSelectedImportance] = useState<1 | 2 | 3 | 4>(
     1
   );
-
-  const getID = async (): Promise<string> => {
-    var telegramUser = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.user;
-    if (!telegramUser || !telegramUser.id) {
-      // console.error("Telegram user not available");
-      // throw new Error("Telegram user not available");
-
-      telegramUser = {
-        id: 101010101,
-      }; // this is purely for dev, do not use in production
-    }
-    console.log("Telegram user ID:", telegramUser.id);
-    console.log("data type of telegramUser.id:", typeof telegramUser.id);
-
-    return telegramUser.id; // use directly as a string
-  };
-
-  // ✅ Fetches uncompleted tasks for the current user
-  const fetchTasks = async () => {
-    const userTeleId = await getID();
-
-    const { data: Todo, error } = await supabase
-      .from("Todo")
-      .select("*")
-      .eq("user_tele_id", userTeleId)
-      .is("finished_at", null)
-      .order("created_at", { ascending: false });
-
-    if (Todo) setTasks(Todo);
-    if (error) console.error("Error fetching tasks:", error);
-  };
-
-  // ✅ Fetches completed tasks for the current user
-  const fetchCompletedTasks = async () => {
-    const userTeleId = await getID();
-
-    const { data: Todo, error } = await supabase
-      .from("Todo")
-      .select("*")
-      .eq("user_tele_id", userTeleId)
-      .not("finished_at", "is", null)
-      .order("created_at", { ascending: false });
-
-    if (Todo) setCompletedTasks(Todo);
-    if (error) console.error("Error fetching completed tasks:", error);
-  };
 
   const addTask = async () => {
     if (!newTaskName.trim()) return;
@@ -83,8 +30,7 @@ const TodoList: React.FC = () => {
       .select();
 
     if (data) {
-      setTasks([...data, ...tasks]);
-      setNewTaskName("");
+      fetchTasks();
     }
     if (error) {
       console.error("Error adding task:", error);
@@ -110,17 +56,14 @@ const TodoList: React.FC = () => {
       setTasks(tasks.map((t) => (t.id === taskId ? data[0] : t)));
       await new Promise((resolve) => setTimeout(resolve, 300));
       fetchTasks();
-      fetchCompletedTasks();
     }
   };
 
-  // ✅ Deletes a task
   const deleteTask = async (taskId: number) => {
     const { error } = await supabase.from("Todo").delete().eq("id", taskId);
 
     if (!error) {
-      setTasks(tasks.filter((t) => t.id !== taskId));
-      setCompletedTasks(completedTasks.filter((t) => t.id !== taskId));
+      fetchTasks();
     }
   };
 
@@ -148,7 +91,6 @@ const TodoList: React.FC = () => {
 
     initializeAuth();
     fetchTasks();
-    fetchCompletedTasks();
   }, []);
 
   const quadrants = [
