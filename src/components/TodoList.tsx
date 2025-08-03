@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
 import { getID, useTasks } from "./Supabase/TaskLogic";
+import audioManager from "../utils/AudioManager";
 
 const TodoList: React.FC = () => {
   const [newTaskName, setNewTaskName] = useState("");
@@ -10,36 +11,15 @@ const TodoList: React.FC = () => {
     1
   );
 
-  // Sound effects
-  const soundRefs = useRef<{
-    add: HTMLAudioElement | null;
-    complete: HTMLAudioElement | null;
-    remove: HTMLAudioElement | null;
-    cancel: HTMLAudioElement | null;
-    emptyAdd: HTMLAudioElement | null;
-  }>({
-    add: null,
-    complete: null, 
-    remove: null,
-    cancel: null,
-    emptyAdd: null,
-  })
-
   const addTask = async () => {
     if (!newTaskName.trim()) {
-      if (soundRefs.current && soundRefs.current.emptyAdd) {
-        soundRefs.current.emptyAdd.currentTime = 0
-        soundRefs.current.emptyAdd.play().catch((e) => console.error("failed to play wrong add sound", e))
-      }
+      audioManager.play("emptyAdd");
       return;
     }
 
     const userTeleId = await getID();
 
-    if (soundRefs.current && soundRefs.current.add) {
-      soundRefs.current.add.currentTime = 0
-      soundRefs.current.add.play().catch((e) => console.error("failed to play add sound", e))
-    }
+    audioManager.play("add");
 
     const { data, error } = await supabase
       .from("Todo")
@@ -73,13 +53,11 @@ const TodoList: React.FC = () => {
     const newFinishedAt = task.finished_at ? null : new Date().toISOString();
 
     // Completion
-    if (task.finished_at == null && soundRefs.current && soundRefs.current.complete) {
-      soundRefs.current.complete.currentTime = 0
-      soundRefs.current.complete.play().catch((e) => console.error("failed to play complete sound", e))
-    } else if (task.finished_at != null && soundRefs.current && soundRefs.current.remove) {
+    if (task.finished_at) {
+      audioManager.play("remove");
+    } else {
       // Revert to active tasks
-      soundRefs.current.remove.currentTime = 0
-      soundRefs.current.remove.play().catch((e) => console.error("failed to play remove sound", e))
+      audioManager.play("complete");
     }
 
     const { data, error } = await supabase
@@ -100,12 +78,10 @@ const TodoList: React.FC = () => {
 
     if (!error) {
       const completed = completedTasks.some((t) => t.id == taskId)
-      if (completed && soundRefs.current && soundRefs.current.remove) {
-        soundRefs.current.remove.currentTime = 0
-        soundRefs.current.remove.play().catch((e) => console.error("failed to play removed sound", e))
-      } else if (!completed && soundRefs.current && soundRefs.current.cancel) {
-        soundRefs.current.cancel.currentTime = 0
-        soundRefs.current.cancel.play().catch((e) => console.error("failed to play cancel sound", e))
+      if (completed) {
+        audioManager.play("remove");
+      } else {
+        audioManager.play("cancel");
       }
 
       fetchTasks();
@@ -137,15 +113,6 @@ const TodoList: React.FC = () => {
     initializeAuth();
     fetchTasks();
   }, []);
-
-  // Init sound effect objects
-  useEffect(() => {
-    soundRefs.current.add = new Audio("audio_files/sharp-pop-328170.mp3")
-    soundRefs.current.complete = new Audio("audio_files/game-level-complete-143022.mp3")
-    soundRefs.current.remove = new Audio("audio_files/mag-remove-92075.mp3")
-    soundRefs.current.cancel = new Audio("audio_files/cancel-116016.mp3")
-    soundRefs.current.emptyAdd = new Audio("audio_files/wronganswer-37702.mp3")
-  }, [])
 
   const quadrants = [
     { id: 1, title: "Urgent & Important", color: 1 },

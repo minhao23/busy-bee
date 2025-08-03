@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { TimerMode } from "../../types";
+import audioManager from "../../utils/AudioManager";
 import "../Dashboard.css";
 
 const TIMER_DURATIONS = {
@@ -16,7 +17,6 @@ const PomodoroTimer: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const intervalRef = useRef<number | null>(null);
-  const alarmRef = useRef<HTMLAudioElement | null>(null);
   const alarmTimerRef = useRef<number | null>(null);
 
   const minutes = Math.floor(timeLeft / 60);
@@ -42,14 +42,6 @@ const PomodoroTimer: React.FC = () => {
     };
   }, [isActive, timeLeft]);
 
-  // Timer alarm
-  useEffect(() => {
-    alarmRef.current = new Audio(
-      "/audio_files/mixkit-morning-clock-alarm-1003.wav"
-    );
-    alarmRef.current.loop = true;
-  }, []);
-
   useEffect(() => {
     return () => {
       if (alarmTimerRef.current) {
@@ -62,16 +54,11 @@ const PomodoroTimer: React.FC = () => {
     setIsActive(false);
 
     // Play alarm
-    if (alarmRef.current) {
-      alarmRef.current.currentTime = 0;
-      alarmRef.current
-        .play()
-        .catch((e) => console.error("Alarm play failed: ", e));
-    }
+    const loop = true;
+    audioManager.play("alarm", loop);
 
     // Play alarm until timer is up
     alarmTimerRef.current = window.setTimeout(() => {
-      stopAlarm();
       handleAlarmDismiss();
     }, ALARM_DURATION * 1000);
   };
@@ -119,10 +106,7 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const stopAlarm = () => {
-    if (alarmRef.current) {
-      alarmRef.current.pause();
-      alarmRef.current.currentTime = 0;
-    }
+    audioManager.stop("alarm");
 
     if (alarmTimerRef.current) {
       clearTimeout(alarmTimerRef.current); // prevent double-trigger
