@@ -27,52 +27,6 @@ const TodoList: React.FC = () => {
     emptyAdd: null,
   })
 
-  const getID = async (): Promise<string> => {
-    var telegramUser = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.user;
-    if (!telegramUser || !telegramUser.id) {
-      // console.error("Telegram user not available");
-      // throw new Error("Telegram user not available");
-
-      telegramUser = {
-        id: 101010101,
-      }; // this is purely for dev, do not use in production
-    }
-    console.log("Telegram user ID:", telegramUser.id);
-    console.log("data type of telegramUser.id:", typeof telegramUser.id);
-
-    return telegramUser.id; // use directly as a string
-  };
-
-  // ✅ Fetches uncompleted tasks for the current user
-  const fetchTasks = async () => {
-    const userTeleId = await getID();
-
-    const { data: Todo, error } = await supabase
-      .from("Todo")
-      .select("*")
-      .eq("user_tele_id", userTeleId)
-      .is("finished_at", null)
-      .order("created_at", { ascending: false });
-
-    if (Todo) setTasks(Todo);
-    if (error) console.error("Error fetching tasks:", error);
-  };
-
-  // ✅ Fetches completed tasks for the current user
-  const fetchCompletedTasks = async () => {
-    const userTeleId = await getID();
-
-    const { data: Todo, error } = await supabase
-      .from("Todo")
-      .select("*")
-      .eq("user_tele_id", userTeleId)
-      .not("finished_at", "is", null)
-      .order("created_at", { ascending: false });
-
-    if (Todo) setCompletedTasks(Todo);
-    if (error) console.error("Error fetching completed tasks:", error);
-  };
-
   const addTask = async () => {
     if (!newTaskName.trim()) {
       if (soundRefs.current && soundRefs.current.emptyAdd) {
@@ -148,9 +102,7 @@ const TodoList: React.FC = () => {
         soundRefs.current.cancel.currentTime = 0
         soundRefs.current.cancel.play().catch((e) => console.error("failed to play cancel sound", e))
       }
-
-      setTasks(tasks.filter((t) => t.id !== taskId));
-      setCompletedTasks(completedTasks.filter((t) => t.id !== taskId));
+      
       fetchTasks();
     }
   };

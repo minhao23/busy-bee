@@ -10,9 +10,6 @@ const TIMER_DURATIONS = {
 
 const ALARM_DURATION = 60; // 1 minute
 
-<<<<<<< HEAD:src/components/PomodoroTimer.tsx
-const PomodoroTimer: React.FC = () => {
-=======
 interface PomodoroTimerProps {
   setTabSwitchBlocked: (blocked: boolean) => void;
 }
@@ -20,7 +17,6 @@ interface PomodoroTimerProps {
 const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
   setTabSwitchBlocked,
 }) => {
->>>>>>> main:src/components/Dashboard/PomodoroTimer.tsx
   const [mode, setMode] = useState<TimerMode>("work");
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATIONS.work);
   const [isActive, setIsActive] = useState(false);
