@@ -11,13 +11,13 @@ const UpcomingTasks = ({ tasks }: Props) => {
   return (
     <div className="tasks-box">
       <h3>Upcoming Tasks</h3>
-      <ul>
+      <div>
         {tasks.map((task) => (
-          <li key={task.id}>
-            <strong>{task.task_name}</strong>
-          </li>
+          <div key={task.id} className="task">
+            {task.task_name}
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
