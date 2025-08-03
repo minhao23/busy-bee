@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { TimerState, TimerMode } from "../types";
+import { TimerState, TimerMode } from "../../types";
+import "../Dashboard.css";
 
 const TIMER_DURATIONS = {
   work: 25 * 60, // 25 minutes
@@ -9,7 +10,17 @@ const TIMER_DURATIONS = {
 
 const ALARM_DURATION = 60; // 1 minute
 
+<<<<<<< HEAD:src/components/PomodoroTimer.tsx
 const PomodoroTimer: React.FC = () => {
+=======
+interface PomodoroTimerProps {
+  setTabSwitchBlocked: (blocked: boolean) => void;
+}
+
+const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
+  setTabSwitchBlocked,
+}) => {
+>>>>>>> main:src/components/Dashboard/PomodoroTimer.tsx
   const [mode, setMode] = useState<TimerMode>("work");
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATIONS.work);
   const [isActive, setIsActive] = useState(false);
@@ -43,7 +54,9 @@ const PomodoroTimer: React.FC = () => {
 
   // Timer alarm
   useEffect(() => {
-    alarmRef.current = new Audio("/audio_files/mixkit-morning-clock-alarm-1003.wav");
+    alarmRef.current = new Audio(
+      "/audio_files/mixkit-morning-clock-alarm-1003.wav"
+    );
     alarmRef.current.loop = true;
   }, []);
 
@@ -61,7 +74,9 @@ const PomodoroTimer: React.FC = () => {
     // Play alarm
     if (alarmRef.current) {
       alarmRef.current.currentTime = 0;
-      alarmRef.current.play().catch((e) => console.error("Alarm play failed: ", e));
+      alarmRef.current
+        .play()
+        .catch((e) => console.error("Alarm play failed: ", e));
     }
 
     // Play alarm until timer is up
@@ -87,7 +102,7 @@ const PomodoroTimer: React.FC = () => {
       setMode("work");
       setTimeLeft(TIMER_DURATIONS.work);
     }
-  }
+  };
 
   const toggleTimer = () => {
     setIsActive(!isActive);
@@ -118,12 +133,12 @@ const PomodoroTimer: React.FC = () => {
       alarmRef.current.pause();
       alarmRef.current.currentTime = 0;
     }
-  
+
     if (alarmTimerRef.current) {
       clearTimeout(alarmTimerRef.current); // prevent double-trigger
       alarmTimerRef.current = null;
     }
-  }
+  };
 
   return (
     <div className="pomodoro-timer">
@@ -211,11 +226,14 @@ const PomodoroTimer: React.FC = () => {
           <button className="control-button secondary" onClick={resetTimer}>
             Reset
           </button>
-        ) : ( 
-          <button className="control-button secondary" onClick={handleAlarmDismiss}>
+        ) : (
+          <button
+            className="control-button secondary"
+            onClick={handleAlarmDismiss}
+          >
             Dismiss
-          </button>   
-        )} 
+          </button>
+        )}
       </div>
     </div>
   );

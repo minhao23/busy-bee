@@ -1,20 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
+import { Task } from "../types";
 import { v5 as uuidv5 } from "uuid";
-
-type Task = {
-  id: number;
-  created_at: string;
-  finished_at: string | null;
-  importance: number;
-  task_name: string;
-};
+import { getID, useTasks } from "./Supabase/TaskLogic";
 
 const TodoList: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
-  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
+  const { setTasks, tasks, fetchTasks, completedTasks } = useTasks();
   const [selectedImportance, setSelectedImportance] = useState<1 | 2 | 3 | 4>(
     1
   );
@@ -109,8 +102,7 @@ const TodoList: React.FC = () => {
       .select();
 
     if (data) {
-      setTasks([...data, ...tasks]);
-      setNewTaskName("");
+      fetchTasks();
     }
     if (error) {
       console.error("Error adding task:", error);
@@ -141,11 +133,9 @@ const TodoList: React.FC = () => {
       setTasks(tasks.map((t) => (t.id === taskId ? data[0] : t)));
       await new Promise((resolve) => setTimeout(resolve, 300));
       fetchTasks();
-      fetchCompletedTasks();
     }
   };
 
-  // ✅ Deletes a task
   const deleteTask = async (taskId: number) => {
     const { error } = await supabase.from("Todo").delete().eq("id", taskId);
 
@@ -161,6 +151,7 @@ const TodoList: React.FC = () => {
 
       setTasks(tasks.filter((t) => t.id !== taskId));
       setCompletedTasks(completedTasks.filter((t) => t.id !== taskId));
+      fetchTasks();
     }
   };
 
@@ -188,7 +179,6 @@ const TodoList: React.FC = () => {
 
     initializeAuth();
     fetchTasks();
-    fetchCompletedTasks();
   }, []);
 
   // Init sound effect objects
