@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
-import { Task } from "../types";
-import { v5 as uuidv5 } from "uuid";
 import { getID, useTasks } from "./Supabase/TaskLogic";
 
 const TodoList: React.FC = () => {
@@ -61,6 +59,8 @@ const TodoList: React.FC = () => {
     if (error) {
       console.error("Error adding task:", error);
     }
+
+    setNewTaskName("");
   };
 
   // ✅ Toggles task completion
@@ -72,9 +72,14 @@ const TodoList: React.FC = () => {
 
     const newFinishedAt = task.finished_at ? null : new Date().toISOString();
 
-    if (soundRefs.current && soundRefs.current.complete) {
+    // Completion
+    if (task.finished_at == null && soundRefs.current && soundRefs.current.complete) {
       soundRefs.current.complete.currentTime = 0
       soundRefs.current.complete.play().catch((e) => console.error("failed to play complete sound", e))
+    } else if (task.finished_at != null && soundRefs.current && soundRefs.current.remove) {
+      // Revert to active tasks
+      soundRefs.current.remove.currentTime = 0
+      soundRefs.current.remove.play().catch((e) => console.error("failed to play remove sound", e))
     }
 
     const { data, error } = await supabase
@@ -102,7 +107,7 @@ const TodoList: React.FC = () => {
         soundRefs.current.cancel.currentTime = 0
         soundRefs.current.cancel.play().catch((e) => console.error("failed to play cancel sound", e))
       }
-      
+
       fetchTasks();
     }
   };
@@ -157,7 +162,7 @@ const TodoList: React.FC = () => {
           value={newTaskName}
           onChange={(e) => setNewTaskName(e.target.value)}
           placeholder="Enter task..."
-          onKeyPress={(e) => e.key === "Enter" && addTask()}
+          onKeyDown={(e) => e.key === "Enter" && addTask()}
         />
         <div className="task-type-row">
           <select

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { TimerState, TimerMode } from "../../types";
+import { TimerMode } from "../../types";
 import "../Dashboard.css";
 
 const TIMER_DURATIONS = {
@@ -10,13 +10,7 @@ const TIMER_DURATIONS = {
 
 const ALARM_DURATION = 60; // 1 minute
 
-interface PomodoroTimerProps {
-  setTabSwitchBlocked: (blocked: boolean) => void;
-}
-
-const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
-  setTabSwitchBlocked,
-}) => {
+const PomodoroTimer: React.FC = () => {
   const [mode, setMode] = useState<TimerMode>("work");
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATIONS.work);
   const [isActive, setIsActive] = useState(false);
@@ -148,18 +142,21 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
         <button
           className={`mode-button ${mode === "work" ? "active" : ""}`}
           onClick={() => switchMode("work")}
+          disabled={isActive || timeLeft === 0}
         >
           Work
         </button>
         <button
           className={`mode-button ${mode === "shortBreak" ? "active" : ""}`}
           onClick={() => switchMode("shortBreak")}
+          disabled={isActive || timeLeft === 0}
         >
           Short Break
         </button>
         <button
           className={`mode-button ${mode === "longBreak" ? "active" : ""}`}
           onClick={() => switchMode("longBreak")}
+          disabled={isActive || timeLeft === 0}
         >
           Long Break
         </button>
