@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
 import { getID, useTasks } from "./Supabase/TaskLogic";
-import audioManager from "../utils/AudioManager";
+import audioManager from "../utils/audioManager";
 
 const TodoList: React.FC = () => {
   const [newTaskName, setNewTaskName] = useState("");

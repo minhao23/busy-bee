@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { TimerMode } from "../../types";
-import audioManager from "../../utils/AudioManager";
+import audioManager from "../../utils/audioManager";
 import "../Dashboard.css";
 
 const TIMER_DURATIONS = {
   work: 25 * 60, // 25 minutes
-  shortBreak: 5 * 60, // 5 minutes
+  shortBreak: 5 , // 5 minutes
   longBreak: 15 * 60, // 15 minutes
 } as const;
 
