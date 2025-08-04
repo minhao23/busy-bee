@@ -150,6 +150,7 @@
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  min-width: 0;
 }
 
 .quadrant h3 {
@@ -163,6 +164,7 @@
 .quadrant-2 { background-color: #e3f2fd10; }
 .quadrant-3 { background-color: #fff3e014; }
 .quadrant-4 { background-color: #e8f5e912; }
+
 
 .quadrant h3 {
   font-size: 0.9rem;
@@ -193,21 +195,24 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 10px;
-  margin-bottom: 10px;
   background: rgb(197, 170, 225);
-  border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   transition: background 0.3s, opacity 0.3s;
 }
+
+.task:nth-child(odd) {
+  background: rgb(197, 170, 225, 0.7);
+}
+
 .task:hover {
   background: rgb(197, 170, 225, 0.8);
 }
 .task-name{
-  flex-grow: 1;
+  flex: auto;
   font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow:  clip;
+  text-overflow:  ellipsis;
 }
 
 .task-date {
@@ -259,6 +264,7 @@
   color: #558b2f;
 }
 
+
 /* Responsive Layout */
 @media (max-width: 768px) {
   .tab-button {
@@ -289,6 +295,10 @@
 @media (max-width: 580px) {
   .app-title {
     font-size: 1.5rem;
+  }
+
+  .task-date {
+    display: none;
   }
 
   .app-subtitle {
