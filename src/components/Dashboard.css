@@ -262,7 +262,7 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 5px;
-  background: rgb(197, 170, 225);
+  background: #456882;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   transition: background 0.3s, opacity 0.3s;
   overflow: hidden;
@@ -289,11 +289,11 @@
 }
 
 .upcoming-task:nth-child(odd) {
-  background: rgb(197, 170, 225, 0.7);
+  background: #456882bb;
 }
 
 .upcoming-task:hover {
-  background: rgb(197, 170, 225, 0.8);
+  background: #6a9ec5;
 }
 
 

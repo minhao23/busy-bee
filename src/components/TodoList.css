@@ -69,7 +69,7 @@
   margin-bottom: 30px;
   flex-wrap: wrap;
   padding: 15px;
-  background: #f5f5f5;
+  background: #D2C1B6;
   border-radius: 8px;
   flex-direction: column;
 }
@@ -195,17 +195,18 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 10px;
-  background: rgb(197, 170, 225);
+  background: #456882;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   transition: background 0.3s, opacity 0.3s;
 }
 
 .task:nth-child(odd) {
-  background: rgb(197, 170, 225, 0.7);
+  background:#456882bb;
 }
 
 .task:hover {
-  background: rgb(197, 170, 225, 0.8);
+  background: #6a9ec5;
+
 }
 .task-name{
   flex: auto;
