@@ -58,6 +58,20 @@
   color: #667eea;
 }
 
+.mode-button.active:disabled {
+  opacity: 10.0;
+  filter: grayscale(100%);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.mode-button:disabled {
+  opacity: 10.0;
+  filter: grayscale(100%);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
 .timer-display {
   width: auto;               /* don’t fix the width */
   max-width: 90vw;           /* responsive on small screens */
@@ -122,6 +136,7 @@
   gap: 1rem;
   width: 100%; /* full width of the parent */
   margin-top: 0.3rem;
+  padding-bottom: 1rem;
 }
 
 .control-button {
@@ -335,7 +350,6 @@
 
   .mode-button {
     border-radius: 0.75rem;
-
   }
 }
 

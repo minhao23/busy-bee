@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import supabase from "../utils/supabase";
 import "./TodoList.css";
-import { Task } from "../types";
-import { v5 as uuidv5 } from "uuid";
 import { getID, useTasks } from "./Supabase/TaskLogic";
+import audioManager from "../utils/audioManager";
 
 const TodoList: React.FC = () => {
   const [newTaskName, setNewTaskName] = useState("");
@@ -13,9 +12,14 @@ const TodoList: React.FC = () => {
   );
 
   const addTask = async () => {
-    if (!newTaskName.trim()) return;
+    if (!newTaskName.trim()) {
+      audioManager.play("emptyAdd");
+      return;
+    }
 
     const userTeleId = await getID();
+
+    audioManager.play("add");
 
     const { data, error } = await supabase
       .from("Todo")
@@ -35,6 +39,8 @@ const TodoList: React.FC = () => {
     if (error) {
       console.error("Error adding task:", error);
     }
+
+    setNewTaskName("");
   };
 
   // ✅ Toggles task completion
@@ -46,12 +52,20 @@ const TodoList: React.FC = () => {
 
     const newFinishedAt = task.finished_at ? null : new Date().toISOString();
 
+    // Completion
+    if (task.finished_at) {
+      audioManager.play("remove");
+    } else {
+      // Revert to active tasks
+      audioManager.play("complete");
+    }
+
     const { data, error } = await supabase
       .from("Todo")
       .update({ finished_at: newFinishedAt })
       .eq("id", taskId)
       .select();
-
+    
     if (data) {
       setTasks(tasks.map((t) => (t.id === taskId ? data[0] : t)));
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -63,6 +77,13 @@ const TodoList: React.FC = () => {
     const { error } = await supabase.from("Todo").delete().eq("id", taskId);
 
     if (!error) {
+      const completed = completedTasks.some((t) => t.id == taskId)
+      if (completed) {
+        audioManager.play("remove");
+      } else {
+        audioManager.play("cancel");
+      }
+
       fetchTasks();
     }
   };
@@ -108,7 +129,7 @@ const TodoList: React.FC = () => {
           value={newTaskName}
           onChange={(e) => setNewTaskName(e.target.value)}
           placeholder="Enter task..."
-          onKeyPress={(e) => e.key === "Enter" && addTask()}
+          onKeyDown={(e) => e.key === "Enter" && addTask()}
         />
         <div className="task-type-row">
           <select

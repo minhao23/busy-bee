@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PomodoroTimer from "./Dashboard/PomodoroTimer";
 import fetchQuote from "./Dashboard/Quotes";
 import "./Dashboard.css";
-import supabase from "../utils/supabase";
-import { Task } from "../types";
 import UpcomingTasks from "./Dashboard/UpcomingTasks";
 import { useTasks } from "./Supabase/TaskLogic";
 
@@ -33,7 +31,7 @@ const Dashboard = ({}) => {
     <div className="dashboard-container">
       <div className="dashboard-main">
         <div className="dashboard-left">
-          <PomodoroTimer setTabSwitchBlocked={() => false} />
+          <PomodoroTimer />
         </div>
         <div className="dashboard-right">
           <UpcomingTasks tasks={topTasks} />
