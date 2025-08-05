@@ -168,6 +168,7 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
       </div>
 
       <div className="timer-display">
+        <div className="custom-setting-placeholder"></div>
         <div className="timer-circle">
           <svg
             className="progress-ring"

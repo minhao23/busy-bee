@@ -13,8 +13,8 @@ const UpcomingTasks = ({ tasks }: Props) => {
       <h3>Upcoming Tasks</h3>
       <div>
         {tasks.map((task) => (
-          <div key={task.id} className="task">
-            {task.task_name}
+          <div key={task.id} className="upcoming-task">
+            <span className="upcoming-task-name">{task.task_name}</span>
           </div>
         ))}
       </div>
