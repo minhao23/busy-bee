@@ -44,13 +44,14 @@
   padding: 0.5rem 1rem;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;
   min-width: 0;
   width: 100%; 
   max-width: 100%;
   gap: 1px;
   overflow: hidden;
   height: 100vh;
+
   
 }
 
