@@ -34,11 +34,11 @@ const Dashboard = ({}) => {
           <PomodoroTimer />
         </div>
         <div className="dashboard-right">
-          <UpcomingTasks tasks={topTasks} />
           <div className="quote-box">
             <p>{quote}</p>
             <p>- {author}</p>
           </div>
+          <UpcomingTasks tasks={topTasks} />
         </div>
       </div>
 
