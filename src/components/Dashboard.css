@@ -33,7 +33,7 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 1.5rem;
   padding: 0.25rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
 }
 
 .mode-button {
@@ -180,7 +180,7 @@
   padding: 0rem;
   min-width: 0;
   width: 100%;
-  height: 96%;
+  height: 100%;
  /* Remove outline for better focus styles */
 }
 
@@ -227,9 +227,10 @@
 
 .stats {
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: 0.1rem;
   padding-left: 1rem;
   border-top: #F9f3ef solid 1px;
+  font-size: 0.7rem;
 }
 
 
@@ -261,7 +262,7 @@
 }
 
 .quote-box{
-  font-size: 12px;
+  font-size: 0.7rem;
   font-family: "satoshi", monospace;
 }
 
@@ -373,9 +374,7 @@
   .mode-button {
     border-radius: 0.75rem;
   }
-  .quote-box {
-    font-size: 16px;
-  }
+
 
 }
 
