@@ -6,7 +6,7 @@ type Props = {
 };
 
 const UpcomingTasks = ({ tasks }: Props) => {
-  if (!tasks.length) return <div className="tasks-box">No tasks upcoming!</div>;
+  if (!tasks.length) return <div className="tasks-box">No upcoming tasks!</div>;
 
   return (
     <div className="tasks-box">
