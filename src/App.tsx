@@ -59,6 +59,9 @@ function App() {
   }, []);
   return (
     <div className="app">
+      <header className="app-header">
+        <h2>Hi, welcome to Ikizen</h2>
+      </header>
       <TaskProvider>
         <nav className="tab-navigation">
           <button

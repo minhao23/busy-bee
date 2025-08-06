@@ -52,7 +52,12 @@
   overflow: hidden;
   height: 100vh;
   
+}
 
+.app-header{
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  font-size: 0.8rem;
 }
 /* Tab Navigation */
 .tab-navigation {
@@ -95,4 +100,8 @@
   height: 20px;
 }
 
+*{
+  font-family: "Satoshi", sans-serif;
+}
 /* Main Content */
+

@@ -206,8 +206,9 @@
 
 .task:hover {
   background: #6a9ec5;
-
 }
+
+
 .task-name{
   flex: auto;
   font-size: 0.9rem;
@@ -308,6 +309,7 @@
 
   .quadrants-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)); /* maintain 2 cols */
+    font-size: 18px;
   }
 
   .task {
