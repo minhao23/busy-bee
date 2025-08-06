@@ -1,6 +1,5 @@
 /* App Layout */
 .app {
-  min-height: 100vh;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -9,7 +8,6 @@
   margin: 0;
   justify-content: flex-start; 
   align-items: center;
-  outline : blue solid 1px; /* Remove outline for better focus styles */
   min-height: 100%; 
 
 }
@@ -51,8 +49,6 @@
   gap: 1px;
   overflow: hidden;
   height: 100vh;
-
-  
 }
 
 .app-header{
@@ -106,3 +102,6 @@
 }
 /* Main Content */
 
+*{
+  outline: red solid 1px;
+}
