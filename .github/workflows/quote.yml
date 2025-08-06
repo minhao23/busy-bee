@@ -2,7 +2,7 @@ name: Insert Quote to Supabase
 
 on:
   schedule:
-    - cron: '0 2 * * *' # every day at 2am UTC
+    - cron: '0 18 * * *' # every day at 2am SGT
   workflow_dispatch: # allow manual trigger
 
 jobs:
