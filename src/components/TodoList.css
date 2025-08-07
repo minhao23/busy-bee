@@ -210,11 +210,20 @@
 
 
 .task-name{
-  flex: auto;
-  font-size: 0.9rem;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow:  ellipsis;
+  text-overflow: ellipsis;
+  white-space: normal; /* Changed from nowrap to allow wrapping */
+  word-break: break-word; /* Ensure long words break properly */
+
+  font-size: 0.9rem;
+  flex-shrink: 1;
+  flex-grow: 1;
+  flex-basis: auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .task-date {
@@ -327,13 +336,6 @@
     grid-row: 1;
   }
 
-  .task > span:first-of-type { /* This is the task name */
-    grid-column: 2;
-    grid-row: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 
   .task > button.delete-btn {
     grid-column: 3;
