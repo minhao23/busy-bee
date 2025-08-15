@@ -7,6 +7,7 @@ const TIMER_DURATIONS = {
   work: 25 * 60, // 25 minutes
   shortBreak: 5 * 60, // 5 minutes
   longBreak: 15 * 60, // 15 minutes
+  custom: 0 // will never use this, only for type consistency
 } as const;
 
 const ALARM_DURATION = 4;
@@ -16,6 +17,7 @@ const PomodoroTimer: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATIONS.work);
   const [isActive, setIsActive] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
+  const [customTime, setCustomTime] = useState(10);
   const intervalRef = useRef<number | null>(null);
   const alarmTimerRef = useRef<number | null>(null);
 
@@ -50,6 +52,14 @@ const PomodoroTimer: React.FC = () => {
     };
   }, []);
 
+  const getTime = (mode: TimerMode) => {
+    if (mode === "custom") {
+      return customTime * 60;
+    } else {
+      return TIMER_DURATIONS[mode];
+    }
+  }
+
   const handleTimerComplete = () => {
     setIsActive(false);
 
@@ -74,7 +84,7 @@ const PomodoroTimer: React.FC = () => {
       const nextMode =
         newCompletedSessions % 4 === 0 ? "longBreak" : "shortBreak";
       setMode(nextMode);
-      setTimeLeft(TIMER_DURATIONS[nextMode]);
+      setTimeLeft(getTime(nextMode));
     } else {
       setMode("work");
       setTimeLeft(TIMER_DURATIONS.work);
@@ -87,12 +97,12 @@ const PomodoroTimer: React.FC = () => {
 
   const resetTimer = () => {
     setIsActive(false);
-    setTimeLeft(TIMER_DURATIONS[mode]);
+    setTimeLeft(getTime(mode));
   };
 
   const switchMode = (newMode: TimerMode) => {
     setMode(newMode);
-    setTimeLeft(TIMER_DURATIONS[newMode]);
+    setTimeLeft(getTime(newMode));
     setIsActive(false);
   };
 
@@ -101,7 +111,7 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const getProgressPercentage = () => {
-    const totalTime = TIMER_DURATIONS[mode];
+    const totalTime = getTime(mode);
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
@@ -144,7 +154,33 @@ const PomodoroTimer: React.FC = () => {
         >
           Long Break
         </button>
+        <button
+          className={`mode-button ${mode == "custom" ? "active" : ""}`}
+          onClick={() => switchMode("custom")}
+          disabled={isActive || timeLeft == 0}
+        >
+          Custom
+        </button>
       </div>
+
+      {mode === "custom" && !isActive && (
+        <div className="custom-setting">
+          <label>
+              Minutes:{" "}
+              <input 
+                type="number"
+                min={1}
+                max={180}
+                value={customTime}
+                onChange={(e) => {
+                  const newTime = parseInt(e.target.value) || 1
+                  setCustomTime(newTime);
+                  setTimeLeft(newTime * 60);
+                }}
+              />
+          </label>
+        </div>
+      )}
 
       <div className="timer-display">
         <div className="custom-setting-placeholder"></div>
@@ -187,7 +223,9 @@ const PomodoroTimer: React.FC = () => {
                 ? "Work"
                 : mode === "shortBreak"
                 ? "Short Break"
-                : "Long Break"}
+                : mode === "longBreak"
+                ? "Long Break"
+                : "Custom"}
             </span>
           </div>
         </div>
