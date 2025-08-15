@@ -2,9 +2,8 @@
 const audioConfig = {
   alarm: "/audio_files/alarm.wav",
   add: "audio_files/add.wav",
-  complete: "audio_files/complete.mp3",
-  remove: "audio_files/remove.mp3",
-  cancel: "audio_files/cancel.mp3",
+  complete: "audio_files/complete.wav",
+  cancel: "audio_files/cancel.ogg",
   emptyAdd: "audio_files/emptyAdd.mp3",
 };
 

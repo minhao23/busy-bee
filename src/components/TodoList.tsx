@@ -54,7 +54,7 @@ const TodoList: React.FC = () => {
 
     // Completion
     if (task.finished_at) {
-      audioManager.play("remove");
+      audioManager.play("cancel");
     } else {
       // Revert to active tasks
       audioManager.play("complete");
@@ -77,13 +77,7 @@ const TodoList: React.FC = () => {
     const { error } = await supabase.from("Todo").delete().eq("id", taskId);
 
     if (!error) {
-      const completed = completedTasks.some((t) => t.id == taskId)
-      if (completed) {
-        audioManager.play("remove");
-      } else {
-        audioManager.play("cancel");
-      }
-
+      audioManager.play("cancel");
       fetchTasks();
     }
   };
