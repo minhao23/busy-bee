@@ -17,7 +17,8 @@ const PomodoroTimer: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATIONS.work);
   const [isActive, setIsActive] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
-  const [customTime, setCustomTime] = useState(10);
+  const [customMinutes, setCustomMinutes] = useState(10);
+  const [customSeconds, setCustomSeconds] = useState(0);
   const intervalRef = useRef<number | null>(null);
   const alarmTimerRef = useRef<number | null>(null);
 
@@ -54,7 +55,7 @@ const PomodoroTimer: React.FC = () => {
 
   const getTime = (mode: TimerMode) => {
     if (mode === "custom") {
-      return customTime * 60;
+      return customMinutes * 60 + customSeconds;
     } else {
       return TIMER_DURATIONS[mode];
     }
@@ -165,20 +166,34 @@ const PomodoroTimer: React.FC = () => {
 
       {mode === "custom" && !isActive && (
         <div className="custom-setting">
-          <label>
-              Minutes:{" "}
-              <input 
-                type="number"
-                min={1}
-                max={180}
-                value={customTime}
-                onChange={(e) => {
-                  const newTime = parseInt(e.target.value) || 1
-                  setCustomTime(newTime);
-                  setTimeLeft(newTime * 60);
-                }}
-              />
-          </label>
+          <div className="time-input">
+            <label>Minutes</label>
+            <input 
+              type="number"
+              min={0}
+              max={180}
+              value={customMinutes}
+              onChange={(e) => {
+                const minutes = parseInt(e.target.value) || 0
+                setCustomMinutes(minutes);
+                setTimeLeft(minutes * 60 + customSeconds);
+              }}
+            />
+          </div>
+          <div className="time-input">
+            <label>Seconds</label>
+            <input
+              type="number"
+              min={0}
+              max={59}
+              value={customSeconds}
+              onChange={(e) => {
+                const seconds = parseInt(e.target.value) || 0;
+                setCustomSeconds(seconds);
+                setTimeLeft(customMinutes * 60 + seconds);
+              }}
+            />
+          </div>
         </div>
       )}
 
