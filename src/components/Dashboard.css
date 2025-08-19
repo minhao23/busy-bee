@@ -329,14 +329,29 @@
   font-weight: bold;
 }
 
-.time-input input {
+.time-input select {
   width: 100%;
-  padding: 0.4rem;
-  border-radius: 0.75rem;
-  border: none;
-  text-align: center;
+  padding: 8px 12px;
   font-size: 1rem;
-  background: rgba(255, 255, 255, 0.9);
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.mode-selector {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.mode-button, .time-input select {
+  width: 100%;
+  max-width: 160px;
+}
+
+.error-message {
+  color: red;
+  font-size: 1em;
 }
 
 

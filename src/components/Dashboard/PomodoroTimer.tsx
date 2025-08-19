@@ -19,6 +19,7 @@ const PomodoroTimer: React.FC = () => {
   const [completedSessions, setCompletedSessions] = useState(0);
   const [customMinutes, setCustomMinutes] = useState(10);
   const [customSeconds, setCustomSeconds] = useState(0);
+  const [zeroTimeErrorMssg, setZeroTimeErrorMssg] = useState("");
   const intervalRef = useRef<number | null>(null);
   const alarmTimerRef = useRef<number | null>(null);
 
@@ -30,7 +31,7 @@ const PomodoroTimer: React.FC = () => {
       intervalRef.current = window.setInterval(() => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && isActive) {
       handleTimerComplete();
     } else {
       if (intervalRef.current) {
@@ -93,7 +94,12 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const toggleTimer = () => {
-    setIsActive(!isActive);
+    if (isCustomModeZeroTime()) {
+      setZeroTimeErrorMssg("Please input a valid time period for the timer");
+    } else {
+      setZeroTimeErrorMssg("");
+      setIsActive(!isActive);
+    }
   };
 
   const resetTimer = () => {
@@ -102,6 +108,7 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const switchMode = (newMode: TimerMode) => {
+    setZeroTimeErrorMssg("");
     setMode(newMode);
     setTimeLeft(getTime(newMode));
     setIsActive(false);
@@ -125,6 +132,10 @@ const PomodoroTimer: React.FC = () => {
     }
   };
 
+  const isCustomModeZeroTime = () => {
+    return mode === "custom" && customMinutes === 0 && customSeconds === 0;
+  }
+
   return (
     <div className="pomodoro-timer">
       <div className="timer-header">
@@ -137,28 +148,28 @@ const PomodoroTimer: React.FC = () => {
         <button
           className={`mode-button ${mode === "work" ? "active" : ""}`}
           onClick={() => switchMode("work")}
-          disabled={isActive || timeLeft === 0}
+          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
         >
           Work
         </button>
         <button
           className={`mode-button ${mode === "shortBreak" ? "active" : ""}`}
           onClick={() => switchMode("shortBreak")}
-          disabled={isActive || timeLeft === 0}
+          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
         >
           Short Break
         </button>
         <button
           className={`mode-button ${mode === "longBreak" ? "active" : ""}`}
           onClick={() => switchMode("longBreak")}
-          disabled={isActive || timeLeft === 0}
+          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
         >
           Long Break
         </button>
         <button
           className={`mode-button ${mode == "custom" ? "active" : ""}`}
           onClick={() => switchMode("custom")}
-          disabled={isActive || timeLeft == 0}
+          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
         >
           Custom
         </button>
@@ -168,31 +179,37 @@ const PomodoroTimer: React.FC = () => {
         <div className="custom-setting">
           <div className="time-input">
             <label>Minutes</label>
-            <input 
-              type="number"
-              min={0}
-              max={180}
-              value={customMinutes}
+            <select
+              value ={customMinutes}
               onChange={(e) => {
-                const minutes = parseInt(e.target.value) || 0
+                const minutes = parseInt(e.target.value);
                 setCustomMinutes(minutes);
                 setTimeLeft(minutes * 60 + customSeconds);
               }}
-            />
+            >
+              {Array.from({ length: 60 }, (_, i) => (
+                <option key={i} value={i}>
+                  { i < 10 ? `0${i}` : i}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="time-input">
             <label>Seconds</label>
-            <input
-              type="number"
-              min={0}
-              max={59}
+            <select
               value={customSeconds}
               onChange={(e) => {
-                const seconds = parseInt(e.target.value) || 0;
+                const seconds = parseInt(e.target.value);
                 setCustomSeconds(seconds);
                 setTimeLeft(customMinutes * 60 + seconds);
               }}
-            />
+            >
+              {Array.from({ length: 60 }, (_, i) => (
+                <option key={i} value={i}>
+                  {i < 10 ? `0${i}` : i}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}
@@ -253,7 +270,7 @@ const PomodoroTimer: React.FC = () => {
         >
           {isActive ? "Pause" : "Start"}
         </button>
-        {timeLeft > 0 ? (
+        {timeLeft > 0 || isCustomModeZeroTime() ? (
           <button className="control-button secondary" onClick={resetTimer}>
             Reset
           </button>
@@ -266,6 +283,7 @@ const PomodoroTimer: React.FC = () => {
           </button>
         )}
       </div>
+      {zeroTimeErrorMssg && <div className="error-message">{zeroTimeErrorMssg}</div>}
     </div>
   );
 };
