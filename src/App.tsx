@@ -4,6 +4,7 @@ import "./App.css";
 import { initializeTelegramUser } from "./components/Supabase/auth";
 import Dashboard from "./components/Dashboard";
 import { TaskProvider } from "./components/Supabase/TaskLogic";
+import audioManager from "./utils/audioManager";
 
 declare global {
   interface Window {
@@ -47,6 +48,7 @@ function App() {
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
         setIsTelegramReady(true);
+        audioManager.init();
         // Else, we will initialise the user, and set the session (done in the initializeTelegramUser function)
         const user = await initializeTelegramUser();
         console.log("Telegram user initialized:", user);
