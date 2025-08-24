@@ -23,4 +23,4 @@ export type Task = {
   task_name: string;
 };
 
-export type TimerMode = "work" | "shortBreak" | "longBreak";
+export type TimerMode = "work" | "shortBreak" | "longBreak" | "custom";
