@@ -97,6 +97,10 @@
 .custom-button:hover {
   color: #ffffff;
 }
+.custom-mode-container {
+  display: flex;
+  justify-content: flex-end;
+}
 
 .timer-circle {
   position: relative;

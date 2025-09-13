@@ -168,6 +168,49 @@ const PomodoroTimer: React.FC = () => {
         </button>
       </div>
 
+      <div className="custom-mode-container">
+        <button
+          className="custom-button"
+          onClick={() => mode != "custom" ? switchMode("custom") : switchMode("work")}
+          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+          <circle cx="12" cy="12" r="3"></circle>
+            <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 
+        1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 
+        1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06
+        a1.65 1.65 0 0 0 .33-1.82 
+        1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
+        c.7 0 1.31-.4 1.51-1 
+        a1.65 1.65 0 0 0-.33-1.82l-.06-.06
+        a2 2 0 1 1 2.83-2.83l.06.06
+        c.51.51 1.2.68 1.82.33 
+        .45-.26.74-.75.74-1.28V3
+        a2 2 0 1 1 4 0v.09
+        c0 .53.29 1.02.74 1.28
+        .62.35 1.31.18 1.82-.33l.06-.06
+        a2 2 0 1 1 2.83 2.83l-.06.06
+        c-.36.36-.49.91-.33 1.82
+        .2.61.79 1.01 1.51 1.01H21
+        a2 2 0 1 1 0 4h-.09
+        c-.72 0-1.31.4-1.51 1z"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
       {mode === "custom" && !isActive && (
         <div className="custom-setting">
           <div className="time-input">
@@ -208,46 +251,6 @@ const PomodoroTimer: React.FC = () => {
       )}
 
       <div className="timer-display">
-        <button
-          className="custom-button"
-          onClick={() => switchMode("custom")}
-          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="3"></circle>
-            <path
-              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 
-      1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 
-      1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06
-      a1.65 1.65 0 0 0 .33-1.82 
-      1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
-      c.7 0 1.31-.4 1.51-1 
-      a1.65 1.65 0 0 0-.33-1.82l-.06-.06
-      a2 2 0 1 1 2.83-2.83l.06.06
-      c.51.51 1.2.68 1.82.33 
-      .45-.26.74-.75.74-1.28V3
-      a2 2 0 1 1 4 0v.09
-      c0 .53.29 1.02.74 1.28
-      .62.35 1.31.18 1.82-.33l.06-.06
-      a2 2 0 1 1 2.83 2.83l-.06.06
-      c-.36.36-.49.91-.33 1.82
-      .2.61.79 1.01 1.51 1.01H21
-      a2 2 0 1 1 0 4h-.09
-      c-.72 0-1.31.4-1.51 1z"
-            ></path>
-          </svg>
-        </button>
         <div className="timer-circle">
           <svg
             className="progress-ring"
