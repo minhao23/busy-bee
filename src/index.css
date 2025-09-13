@@ -61,12 +61,6 @@ input {
   margin: 0;
 }
 
-/* Focus styles for accessibility */
-button:focus,
-input:focus {
-  outline: 2px solid #ffffff;
-  outline-offset: 2px;
-}
 
 /* Ensure proper touch targets on mobile */
 @media (max-width: 768px) {

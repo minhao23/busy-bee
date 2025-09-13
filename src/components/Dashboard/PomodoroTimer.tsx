@@ -7,7 +7,7 @@ const TIMER_DURATIONS = {
   work: 25 * 60, // 25 minutes
   shortBreak: 5 * 60, // 5 minutes
   longBreak: 15 * 60, // 15 minutes
-  custom: 0 // will never use this, only for type consistency
+  custom: 0, // will never use this, only for type consistency
 } as const;
 
 const ALARM_DURATION = 4;
@@ -60,7 +60,7 @@ const PomodoroTimer: React.FC = () => {
     } else {
       return TIMER_DURATIONS[mode];
     }
-  }
+  };
 
   const handleTimerComplete = () => {
     setIsActive(false);
@@ -134,7 +134,7 @@ const PomodoroTimer: React.FC = () => {
 
   const isCustomModeZeroTime = () => {
     return mode === "custom" && customMinutes === 0 && customSeconds === 0;
-  }
+  };
 
   return (
     <div className="pomodoro-timer">
@@ -166,12 +166,48 @@ const PomodoroTimer: React.FC = () => {
         >
           Long Break
         </button>
+      </div>
+
+      <div className="custom-mode-container">
         <button
-          className={`mode-button ${mode == "custom" ? "active" : ""}`}
-          onClick={() => switchMode("custom")}
+          className="custom-button"
+          onClick={() => mode != "custom" ? switchMode("custom") : switchMode("work")}
           disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
         >
-          Custom
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+          <circle cx="12" cy="12" r="3"></circle>
+            <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 
+        1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 
+        1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06
+        a1.65 1.65 0 0 0 .33-1.82 
+        1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
+        c.7 0 1.31-.4 1.51-1 
+        a1.65 1.65 0 0 0-.33-1.82l-.06-.06
+        a2 2 0 1 1 2.83-2.83l.06.06
+        c.51.51 1.2.68 1.82.33 
+        .45-.26.74-.75.74-1.28V3
+        a2 2 0 1 1 4 0v.09
+        c0 .53.29 1.02.74 1.28
+        .62.35 1.31.18 1.82-.33l.06-.06
+        a2 2 0 1 1 2.83 2.83l-.06.06
+        c-.36.36-.49.91-.33 1.82
+        .2.61.79 1.01 1.51 1.01H21
+        a2 2 0 1 1 0 4h-.09
+        c-.72 0-1.31.4-1.51 1z"
+            ></path>
+          </svg>
         </button>
       </div>
 
@@ -180,7 +216,7 @@ const PomodoroTimer: React.FC = () => {
           <div className="time-input">
             <label>Minutes</label>
             <select
-              value ={customMinutes}
+              value={customMinutes}
               onChange={(e) => {
                 const minutes = parseInt(e.target.value);
                 setCustomMinutes(minutes);
@@ -189,7 +225,7 @@ const PomodoroTimer: React.FC = () => {
             >
               {Array.from({ length: 60 }, (_, i) => (
                 <option key={i} value={i}>
-                  { i < 10 ? `0${i}` : i}
+                  {i < 10 ? `0${i}` : i}
                 </option>
               ))}
             </select>
@@ -215,7 +251,6 @@ const PomodoroTimer: React.FC = () => {
       )}
 
       <div className="timer-display">
-        <div className="custom-setting-placeholder"></div>
         <div className="timer-circle">
           <svg
             className="progress-ring"
@@ -283,7 +318,9 @@ const PomodoroTimer: React.FC = () => {
           </button>
         )}
       </div>
-      {zeroTimeErrorMssg && <div className="error-message">{zeroTimeErrorMssg}</div>}
+      {zeroTimeErrorMssg && (
+        <div className="error-message">{zeroTimeErrorMssg}</div>
+      )}
     </div>
   );
 };

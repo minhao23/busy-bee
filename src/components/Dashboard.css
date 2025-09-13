@@ -83,6 +83,24 @@
   border-radius: 1rem;
   aspect-ratio: 1 / 0.7; 
 }
+.custom-button {
+  background-color: transparent;   /* flat, no background */
+  border: none;                    /* remove default border */
+  outline: none;                   /* remove focus outline */
+  cursor: pointer;                 /* show pointer on hover */
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  align-self: self-end;
+  color: #ffffff82;
+}
+.custom-button:hover {
+  color: #ffffff;
+}
+.custom-mode-container {
+  display: flex;
+  justify-content: flex-end;
+}
 
 .timer-circle {
   position: relative;
@@ -181,7 +199,6 @@
   min-width: 0;
   width: 100%;
   height: 100%;
- /* Remove outline for better focus styles */
 }
 
 .dashboard-main {
@@ -222,7 +239,6 @@
   min-height: 0;
   height: 100%;
 
- /* Remove outline for better focus styles */
 }
 
 .stats {
@@ -307,13 +323,6 @@
   background: #6a9ec5;
 }
 
-.custom-setting {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-  justify-content: center;
-  width: 100%;
-}
 
 .time-input {
   flex: 1;
@@ -423,4 +432,5 @@
 
 
 }
+
 
