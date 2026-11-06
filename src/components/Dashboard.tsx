@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import PomodoroTimer from "./Dashboard/PomodoroTimer";
 import fetchQuote from "./Dashboard/Quotes";
-import "./Dashboard.css";
+import "./Focus.css";
 import UpcomingTasks from "./Dashboard/UpcomingTasks";
 import { useTasks } from "./Supabase/TaskLogic";
 
 const Dashboard = ({}) => {
   const [quote, setQuote] = useState("");
   const [author, setAuthor] = useState("");
-  const { topTasks, fetchTopTasks } = useTasks();
-  const { tasks } = useTasks();
+  const { topTasks, isLoading, loadError, fetchTasks } = useTasks();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,7 +23,6 @@ const Dashboard = ({}) => {
     };
 
     fetchData();
-    fetchTopTasks();
   }, []);
 
   return (
@@ -34,17 +32,16 @@ const Dashboard = ({}) => {
           <PomodoroTimer />
         </div>
         <div className="dashboard-right">
-          <div className="quote-box">
-            <p>{quote}</p>
-            <p>- {author}</p>
-          </div>
-          <UpcomingTasks tasks={topTasks} />
+          {loadError ? <p className="error-message" role="alert">{loadError} <button onClick={fetchTasks}>Retry</button></p>
+            : isLoading ? <p className="tasks-caption" role="status">Loading your priorities...</p>
+            : <UpcomingTasks tasks={topTasks} />}
+          <blockquote className="quote-box">
+            <p className="quote-text">{quote}</p>
+            {author && <footer className="quote-author">{author}</footer>}
+          </blockquote>
         </div>
       </div>
 
-      <div className="stats">
-        <div className="stat-item">Total Tasks: {tasks.length}</div>
-      </div>
     </div>
   );
 };

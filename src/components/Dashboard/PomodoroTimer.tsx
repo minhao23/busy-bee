@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { TimerMode } from "../../types";
 import audioManager from "../../utils/audioManager";
-import "../Dashboard.css";
+import "../Focus.css";
+import Icon from "../Icon";
 
 const TIMER_DURATIONS = {
   work: 25 * 60, // 25 minutes
@@ -16,12 +17,14 @@ const PomodoroTimer: React.FC = () => {
   const [mode, setMode] = useState<TimerMode>("work");
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATIONS.work);
   const [isActive, setIsActive] = useState(false);
+  const [isAlarmRinging, setIsAlarmRinging] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [customMinutes, setCustomMinutes] = useState(10);
   const [customSeconds, setCustomSeconds] = useState(0);
   const [zeroTimeErrorMssg, setZeroTimeErrorMssg] = useState("");
   const intervalRef = useRef<number | null>(null);
   const alarmTimerRef = useRef<number | null>(null);
+  const deadlineRef = useRef<number | null>(null);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -29,7 +32,8 @@ const PomodoroTimer: React.FC = () => {
   useEffect(() => {
     if (isActive && timeLeft > 0) {
       intervalRef.current = window.setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        // Reconcile with elapsed time when a mobile WebView resumes from the background.
+        if (deadlineRef.current) setTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
       }, 1000);
     } else if (timeLeft === 0 && isActive) {
       handleTimerComplete();
@@ -51,6 +55,7 @@ const PomodoroTimer: React.FC = () => {
       if (alarmTimerRef.current) {
         clearTimeout(alarmTimerRef.current);
       }
+      audioManager.stop("alarm");
     };
   }, []);
 
@@ -64,6 +69,8 @@ const PomodoroTimer: React.FC = () => {
 
   const handleTimerComplete = () => {
     setIsActive(false);
+    setIsAlarmRinging(true);
+    deadlineRef.current = null;
 
     // Play alarm
     const loop = true;
@@ -76,7 +83,9 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const handleAlarmDismiss = () => {
+    if (!alarmTimerRef.current) return;
     stopAlarm();
+    setIsAlarmRinging(false);
 
     if (mode === "work") {
       const newCompletedSessions = completedSessions + 1;
@@ -94,16 +103,21 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const toggleTimer = () => {
+    if (isAlarmRinging) return;
     if (isCustomModeZeroTime()) {
       setZeroTimeErrorMssg("Please input a valid time period for the timer");
     } else {
       setZeroTimeErrorMssg("");
+      deadlineRef.current = isActive ? null : Date.now() + timeLeft * 1000;
       setIsActive(!isActive);
     }
   };
 
   const resetTimer = () => {
     setIsActive(false);
+    deadlineRef.current = null;
+    stopAlarm();
+    setIsAlarmRinging(false);
     setTimeLeft(getTime(mode));
   };
 
@@ -120,7 +134,7 @@ const PomodoroTimer: React.FC = () => {
 
   const getProgressPercentage = () => {
     const totalTime = getTime(mode);
-    return ((totalTime - timeLeft) / totalTime) * 100;
+    return totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
   };
 
   const stopAlarm = () => {
@@ -137,10 +151,16 @@ const PomodoroTimer: React.FC = () => {
   };
 
   return (
-    <div className="pomodoro-timer">
+    <div className={`pomodoro-timer ${isActive ? "timer-running" : ""}`}>
       <div className="timer-header">
+        <h2>Focus timer</h2>
+      </div>
+      <div className="session-row">
         <div className="session-counter">
-          Sessions Completed: {completedSessions}
+          {completedSessions} {completedSessions === 1 ? "session" : "sessions"} completed
+        </div>
+        <div className="session-dots" aria-label={`${completedSessions % 4} of 4 work sessions in this cycle`}>
+          {[0, 1, 2, 3].map((i) => <span key={i} className={i < completedSessions % 4 ? "filled" : ""} />)}
         </div>
       </div>
 
@@ -148,21 +168,24 @@ const PomodoroTimer: React.FC = () => {
         <button
           className={`mode-button ${mode === "work" ? "active" : ""}`}
           onClick={() => switchMode("work")}
-          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
+          aria-pressed={mode === "work"}
+          disabled={isActive || isAlarmRinging}
         >
           Work
         </button>
         <button
           className={`mode-button ${mode === "shortBreak" ? "active" : ""}`}
           onClick={() => switchMode("shortBreak")}
-          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
+          aria-pressed={mode === "shortBreak"}
+          disabled={isActive || isAlarmRinging}
         >
           Short Break
         </button>
         <button
           className={`mode-button ${mode === "longBreak" ? "active" : ""}`}
           onClick={() => switchMode("longBreak")}
-          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
+          aria-pressed={mode === "longBreak"}
+          disabled={isActive || isAlarmRinging}
         >
           Long Break
         </button>
@@ -171,51 +194,22 @@ const PomodoroTimer: React.FC = () => {
       <div className="custom-mode-container">
         <button
           className="custom-button"
+          aria-label="Custom timer"
+          aria-pressed={mode === "custom"}
           onClick={() => mode != "custom" ? switchMode("custom") : switchMode("work")}
-          disabled={!isCustomModeZeroTime() && (isActive || timeLeft === 0)}
+          disabled={isActive || isAlarmRinging}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-          <circle cx="12" cy="12" r="3"></circle>
-            <path
-                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 
-        1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 
-        1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06
-        a1.65 1.65 0 0 0 .33-1.82 
-        1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09
-        c.7 0 1.31-.4 1.51-1 
-        a1.65 1.65 0 0 0-.33-1.82l-.06-.06
-        a2 2 0 1 1 2.83-2.83l.06.06
-        c.51.51 1.2.68 1.82.33 
-        .45-.26.74-.75.74-1.28V3
-        a2 2 0 1 1 4 0v.09
-        c0 .53.29 1.02.74 1.28
-        .62.35 1.31.18 1.82-.33l.06-.06
-        a2 2 0 1 1 2.83 2.83l-.06.06
-        c-.36.36-.49.91-.33 1.82
-        .2.61.79 1.01 1.51 1.01H21
-        a2 2 0 1 1 0 4h-.09
-        c-.72 0-1.31.4-1.51 1z"
-            ></path>
-          </svg>
+          Custom duration
         </button>
       </div>
 
       {mode === "custom" && !isActive && (
         <div className="custom-setting">
           <div className="time-input">
-            <label>Minutes</label>
+            <label htmlFor="custom-minutes">Minutes</label>
             <select
+              id="custom-minutes"
+              disabled={isAlarmRinging}
               value={customMinutes}
               onChange={(e) => {
                 const minutes = parseInt(e.target.value);
@@ -231,8 +225,10 @@ const PomodoroTimer: React.FC = () => {
             </select>
           </div>
           <div className="time-input">
-            <label>Seconds</label>
+            <label htmlFor="custom-seconds">Seconds</label>
             <select
+              id="custom-seconds"
+              disabled={isAlarmRinging}
               value={customSeconds}
               onChange={(e) => {
                 const seconds = parseInt(e.target.value);
@@ -255,12 +251,12 @@ const PomodoroTimer: React.FC = () => {
           <svg
             className="progress-ring"
             viewBox="0 0 200 200"
-            style={{ width: "40vmin", height: "40vmin" }}
+            aria-hidden="true"
           >
             <circle
               className="progress-ring-background"
-              stroke="#e5e7eb"
-              strokeWidth="8"
+              stroke="var(--line)"
+              strokeWidth="3"
               fill="transparent"
               r="92"
               cx="100"
@@ -268,21 +264,21 @@ const PomodoroTimer: React.FC = () => {
             />
             <circle
               className="progress-ring-fill"
-              stroke={mode === "work" ? "#dc2626" : "#16a34a"}
-              strokeWidth="8"
+              stroke={mode === "work" || mode === "custom" ? "var(--accent)" : "var(--success)"}
+              strokeWidth="3"
               fill="transparent"
               r="92"
               cx="100"
               cy="100"
-              strokeDasharray={`${2 * Math.PI * 96}`}
+              strokeDasharray={`${2 * Math.PI * 92}`}
               strokeDashoffset={`${
-                2 * Math.PI * 96 * (1 - getProgressPercentage() / 100)
+                2 * Math.PI * 92 * (1 - getProgressPercentage() / 100)
               }`}
               transform="rotate(-90 100 100)"
             />
           </svg>
           <div className="timer-text">
-            <span className="timer-time">
+            <span className="timer-time" role="timer" aria-label={`${minutes} minutes ${seconds} seconds remaining`}>
               {formatTime(minutes)}:{formatTime(seconds)}
             </span>
             <span className="timer-mode">
@@ -302,12 +298,14 @@ const PomodoroTimer: React.FC = () => {
         <button
           className={`control-button primary ${isActive ? "pause" : "start"}`}
           onClick={toggleTimer}
+          disabled={isAlarmRinging}
         >
-          {isActive ? "Pause" : "Start"}
+          <Icon name={isActive ? "pause" : "play"} />
+          {isAlarmRinging ? "Finished" : isActive ? "Pause" : timeLeft < getTime(mode) ? "Resume" : "Start"}
         </button>
-        {timeLeft > 0 || isCustomModeZeroTime() ? (
+        {!isAlarmRinging ? (
           <button className="control-button secondary" onClick={resetTimer}>
-            Reset
+            <Icon name="reset" /> Reset
           </button>
         ) : (
           <button
@@ -319,7 +317,7 @@ const PomodoroTimer: React.FC = () => {
         )}
       </div>
       {zeroTimeErrorMssg && (
-        <div className="error-message">{zeroTimeErrorMssg}</div>
+        <div className="error-message" role="alert">{zeroTimeErrorMssg}</div>
       )}
     </div>
   );

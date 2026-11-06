@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { Task } from "../../types";
 import supabase from "../../utils/supabase";
 
@@ -7,10 +7,12 @@ type TaskContextType = {
   tasks: Task[];
   topTasks: Task[];
   completedTasks: Task[];
+  isLoading: boolean;
+  loadError: string;
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   setTopTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-  fetchTasks: () => void;
-  fetchTopTasks: () => void;
+  fetchTasks: () => Promise<void>;
+  fetchTopTasks: () => Promise<void>;
 };
 
 const TaskContext = createContext<TaskContextType | null>(null);
@@ -21,8 +23,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [topTasks, setTopTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     const userTeleId = await getID();
     const { data: Todo, error } = await supabase
       .from("Todo")
@@ -35,31 +39,24 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const completed = Todo.filter((t) => !!t.finished_at);
       setTasks(active);
       setCompletedTasks(completed);
-      fetchTopTasks();
     }
 
-    if (error) console.error("Error fetching tasks:", error);
-  };
+    setLoadError(error ? "Tasks couldn't load. Please retry." : "");
+    setIsLoading(false);
+  }, []);
 
-  const fetchTopTasks = async () => {
-    const userTeleId = await getID();
-
-    const { data: Todo, error } = await supabase
-      .from("Todo")
-      .select("*")
-      .eq("user_tele_id", userTeleId)
-      .is("finished_at", null)
-      .order("importance", { ascending: true })
-      .limit(5);
-
-    if (Todo) setTopTasks(Todo);
-    if (error) console.error("Error fetching top tasks:", error);
-  };
+  useEffect(() => {
+    setTopTasks([...tasks].sort((a, b) => a.importance - b.importance).slice(0, 5));
+  }, [tasks]);
 
   useEffect(() => {
     fetchTasks();
-    fetchTopTasks();
-  }, []);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      // Schedule outside the auth callback to avoid waiting on the auth lock.
+      window.setTimeout(() => fetchTasks(), 0);
+    });
+    return () => subscription.unsubscribe();
+  }, [fetchTasks]);
 
   return (
     <TaskContext.Provider
@@ -67,10 +64,12 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
         tasks,
         topTasks,
         completedTasks,
+        isLoading,
+        loadError,
         setTasks,
         setTopTasks,
         fetchTasks,
-        fetchTopTasks,
+        fetchTopTasks: fetchTasks,
       }}
     >
       {children}

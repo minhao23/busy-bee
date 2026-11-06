@@ -1,100 +1,71 @@
-:root {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Satoshi","Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",  sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: #f9f3ef;
+@font-face {
+  font-family: "Satoshi";
+  src: url("./utils/fonts/Satoshi_Complete/Fonts/WEB/fonts/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
 
+:root {
+  color-scheme: dark;
+  --canvas: #1b3c53;
+  --surface: #294b63;
+  --surface-raised: #355970;
+  --surface-inset: #173449;
+  --accent: #e8c595;
+  --ink: #f9f3ef;
+  --muted: #d0dce4;
+  --line: #607f93;
+  --control-line: #90aab9;
+  --error: #ffd1c6;
+  --success: #c6e4cc;
+  --text-small: 0.8125rem;
+  --text-label: 0.875rem;
+  --text-body: 1rem;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: "Satoshi", -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  font-weight: 500;
+  background: var(--canvas);
+  color: var(--ink);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
 }
 
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+#root { min-height: 100vh; min-height: 100dvh; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-weight: 650; line-height: 1.25; text-wrap: balance; }
+p { text-wrap: pretty; }
+button, input, select { font: inherit; }
+button { color: inherit; cursor: pointer; }
+button, input, select { -webkit-tap-highlight-color: transparent; }
+button:disabled { opacity: 0.75; cursor: not-allowed; }
+input, select { color: var(--ink); caret-color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100%;
-  background-color: #1B3C53;
+::selection { background: var(--accent); color: var(--canvas); }
+* { scrollbar-width: thin; scrollbar-color: var(--line) var(--canvas); }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
-
-#root {
-  min-height: 100vh;
-  width: 100%;
-}
-
-html, body, #root {
-  height: 100%;
-}
-
-
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  font-weight: 600;
-  font-family: 'Satoshi', sans-serif;
-}
-
-button {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  color: inherit;
-  margin: 0;
-}
-
-input {
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  margin: 0;
-}
-
-
-/* Ensure proper touch targets on mobile */
-@media (max-width: 768px) {
-  button {
-    min-height: 35px;
-    min-width: 35px;
+.icon { width: 20px; height: 20px; flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
-}
-
-
-@font-face {
-  font-family: 'Satoshi';
-  src: url('./utils/fonts/Satoshi_Complete/Fonts/OTF/Satoshi-Black.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Satoshi';
-  src: url('./utils/fonts/Satoshi_Complete/Fonts/OTF/Satoshi-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: bold;
-}
-
-@font-face {
-  font-family: 'Satoshi';
-  src: url('./utils/fonts/Satoshi_Complete/Fonts/OTF/Satoshi-Italic.otf') format('opentype');
-  font-weight: 400;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Satoshi';
-  src: url('./utils/fonts/Satoshi_Complete/Fonts/OTF/Satoshi-Light.otf') format('opentype');
-  font-weight: 400;
-  font-style: light;
 }
