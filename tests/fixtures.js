@@ -7,7 +7,8 @@ const deferred = () => {
 };
 
 export const test = base.extend({
-  board: async ({ page, context }, use) => {
+  telegramClient: [{}, { option: true }],
+  board: async ({ page, context, telegramClient }, use) => {
     let rows = [{
       id: 1,
       task_name: "Persistence original",
@@ -22,13 +23,36 @@ export const test = base.extend({
     const errors = [];
     const routeErrors = [];
     page.on("pageerror", error => errors.push(error.message));
-    await context.addInitScript(() => {
-      window.Telegram = { WebApp: {
+    await context.addInitScript(client => {
+      const handlers = {};
+      window.__telegramViewportCalls = { expand: 0, fullscreen: 0 };
+      const webApp = {
         initDataUnsafe: { user: { id: 101010101 } },
+        platform: client.platform,
+        viewportStableHeight: client.height,
+        safeAreaInset: client.safeAreaInset,
+        contentSafeAreaInset: client.contentSafeAreaInset,
+        isVersionAtLeast: version => Number(client.version || 0) >= Number(version),
         ready() {},
-        expand() {},
-      } };
-    });
+        expand() { window.__telegramViewportCalls.expand++; },
+        onEvent(event, handler) { (handlers[event] ||= new Set()).add(handler); },
+        offEvent(event, handler) { handlers[event]?.delete(handler); },
+        emit(event) { handlers[event]?.forEach(handler => handler()); },
+      };
+      if (client.fullscreenAvailable) {
+        webApp.requestFullscreen = () => {
+          window.__telegramViewportCalls.fullscreen++;
+          if (client.fullscreenThrows) throw new Error("Unsupported fullscreen");
+        };
+      }
+      window.Telegram = {};
+      // The bundled SDK assigns this global during import; retain the controlled host.
+      Object.defineProperty(window.Telegram, "WebApp", {
+        get: () => webApp,
+        set: () => {},
+        configurable: true,
+      });
+    }, telegramClient);
     // Never allow the test browser to contact a real external service.
     await context.route("**/*", async route => {
       const request = route.request();

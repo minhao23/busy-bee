@@ -6,6 +6,7 @@ import Dashboard from "./components/Dashboard";
 import { TaskProvider } from "./components/Supabase/TaskLogic";
 import audioManager from "./utils/audioManager";
 import Icon from "./components/Icon";
+import { configureDesktopViewport, isTelegramDesktop } from "./utils/telegramViewport";
 import "./Desktop.css";
 
 declare global {
@@ -37,8 +38,12 @@ if (import.meta.env.DEV) {
 
 function App() {
   const [activeTab, setActiveTab] = useState<"timer" | "todos">("timer");
+  const desktopTelegram = isTelegramDesktop(window.Telegram?.WebApp);
+  const today = new Date();
+  const dateValue = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   useEffect(() => {
+    let cleanupViewport: (() => void) | undefined;
     const initTelegram = async () => {
       try {
         console.log("Initializing Telegram WebApp...");
@@ -53,6 +58,7 @@ function App() {
         telegramWebApp.expand();
         telegramWebApp.setHeaderColor?.("#1b3c53");
         telegramWebApp.setBackgroundColor?.("#1b3c53");
+        cleanupViewport = configureDesktopViewport(telegramWebApp);
         audioManager.init();
         // Else, we will initialise the user, and set the session (done in the initializeTelegramUser function)
         const user = await initializeTelegramUser();
@@ -63,13 +69,16 @@ function App() {
     };
 
     initTelegram();
+    return () => cleanupViewport?.();
   }, []);
   return (
-    <div className="app">
+    <div className="app" data-telegram-desktop={desktopTelegram ? "true" : undefined}>
       <div className="app-shell">
         <header className="app-header">
-          <h1 className="app-title">Busy Bee</h1>
-          <span className="app-date">{new Date().toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+          <h1 className="app-title"><Icon name="bee" />Busy Bee</h1>
+          <time className="app-date" dateTime={dateValue}>
+            {today.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+          </time>
         </header>
         <TaskProvider>
           <nav className="tab-navigation" aria-label="Main navigation">

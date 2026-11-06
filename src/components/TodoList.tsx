@@ -212,33 +212,33 @@ const TodoList: React.FC = () => {
       </div>
 
       <div className="quadrants-grid">
-        {quadrants.map((quadrant) => (
-          <div
-            key={quadrant.id}
-            data-quadrant={quadrant.id}
-            className={`quadrant quadrant-${quadrant.id} ${
-              activeDropZone === quadrant.id ? "quadrant-drop-active" : ""
-            }`}
-          >
-            <div className="quadrant-header">
-              <div>
-                <h3>{quadrant.title}</h3>
-                <p>{quadrant.description}</p>
-              </div>
-              <span className="quadrant-count">
-                {tasks.filter((task) => task.importance === quadrant.id).length}
-              </span>
-            </div>
-            <div className="tasks-list">
-              {tasks.filter((task) => task.importance === quadrant.id).length ===
-              0 && activeDropZone === quadrant.id && (
-                <div className="quadrant-empty-state">
-                  Drop here
+        {quadrants.map((quadrant) => {
+          const quadrantTasks = tasks.filter((task) => task.importance === quadrant.id);
+          return (
+            <div
+              key={quadrant.id}
+              data-quadrant={quadrant.id}
+              data-empty={quadrantTasks.length === 0}
+              className={`quadrant quadrant-${quadrant.id} ${
+                activeDropZone === quadrant.id ? "quadrant-drop-active" : ""
+              }`}
+            >
+              <div className="quadrant-header">
+                <div>
+                  <h3>{quadrant.title}</h3>
+                  <p>{quadrant.description}</p>
                 </div>
-              )}
-              {tasks
-                .filter((task) => task.importance === quadrant.id)
-                .map((task) => (
+                <span className="quadrant-count">
+                  {quadrantTasks.length}
+                </span>
+              </div>
+              <div className="tasks-list">
+                {quadrantTasks.length === 0 && activeDropZone === quadrant.id && (
+                  <div className="quadrant-empty-state">
+                    Drop here
+                  </div>
+                )}
+                {quadrantTasks.map((task) => (
                   <TaskCard
                     key={task.id}
                     task={task} disabled={saving}
@@ -248,9 +248,10 @@ const TodoList: React.FC = () => {
                     onDrag={(_, quadrant) => setActiveDropZone(quadrant)}
                   />
                 ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <details ref={completedSection} className="completed">
