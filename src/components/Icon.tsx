@@ -1,6 +1,12 @@
-type IconName = "timer" | "board" | "plus" | "grip" | "trash" | "play" | "pause" | "reset";
+type IconName = "bee" | "edit" | "timer" | "board" | "plus" | "grip" | "trash" | "play" | "pause" | "reset";
 
 const paths: Record<IconName, React.ReactNode> = {
+  bee: <>
+    <path d="M12 10C8 10 5 6 7 4s5 1 5 6c0-5 3-8 5-6s-1 6-5 6Z" />
+    <rect x="4" y="10" width="16" height="10" rx="5" />
+    <path d="M10 10v10M14 10v10" />
+  </>,
+  edit: <path d="m14.5 4.5 5 5M4 20l4.5-1 12-12a3.5 3.5 0 0 0-5-5l-12 12Z" />,
   timer: <><circle cx="12" cy="13" r="8" /><path d="M12 9v4l3 2M9 2h6M12 2v3" /></>,
   board: <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M12 3v18M3 12h18" /></>,
   plus: <path d="M12 5v14M5 12h14" />,
@@ -14,7 +20,7 @@ const paths: Record<IconName, React.ReactNode> = {
 export default function Icon({ name }: { name: IconName }) {
   return (
     <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
       {paths[name]}
     </svg>
   );

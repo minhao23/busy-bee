@@ -5,7 +5,7 @@ import "./Focus.css";
 import UpcomingTasks from "./Dashboard/UpcomingTasks";
 import { useTasks } from "./Supabase/TaskLogic";
 
-const Dashboard = ({}) => {
+const Dashboard = () => {
   const [quote, setQuote] = useState("");
   const [author, setAuthor] = useState("");
   const { topTasks, isLoading, loadError, fetchTasks } = useTasks();
@@ -41,7 +41,6 @@ const Dashboard = ({}) => {
           </blockquote>
         </div>
       </div>
-
     </div>
   );
 };

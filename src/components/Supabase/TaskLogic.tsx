@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { Task } from "../../types";
 import supabase from "../../utils/supabase";
 
-// Add topTasks and setTopTasks to the context type
 type TaskContextType = {
   tasks: Task[];
   topTasks: Task[];
@@ -10,9 +9,7 @@ type TaskContextType = {
   isLoading: boolean;
   loadError: string;
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-  setTopTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   fetchTasks: () => Promise<void>;
-  fetchTopTasks: () => Promise<void>;
 };
 
 const TaskContext = createContext<TaskContextType | null>(null);
@@ -22,7 +19,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
-  const [topTasks, setTopTasks] = useState<Task[]>([]);
+  const topTasks = useMemo(
+    () => [...tasks].sort((a, b) => a.importance - b.importance).slice(0, 5),
+    [tasks]
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
@@ -46,10 +46,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    setTopTasks([...tasks].sort((a, b) => a.importance - b.importance).slice(0, 5));
-  }, [tasks]);
-
-  useEffect(() => {
     fetchTasks();
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       // Schedule outside the auth callback to avoid waiting on the auth lock.
@@ -67,9 +63,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
         isLoading,
         loadError,
         setTasks,
-        setTopTasks,
         fetchTasks,
-        fetchTopTasks: fetchTasks,
       }}
     >
       {children}
@@ -83,11 +77,7 @@ export const useTasks = () => {
   return context;
 };
 
-export const getID = async (): Promise<string> => {
-  var telegramUser = (window as any)?.Telegram?.WebApp?.initDataUnsafe?.user;
-  if (!telegramUser || !telegramUser.id) {
-    telegramUser = { id: 101010101 }; // dev only
-  }
-  console.log("Telegram user ID:", telegramUser.id);
-  return telegramUser.id;
+export const getID = async (): Promise<number> => {
+  const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  return telegramUser?.id || 101010101;
 };

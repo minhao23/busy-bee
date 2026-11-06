@@ -13,11 +13,8 @@
     grid-row: 1;
     min-height: 80px;
     padding: 0 0 24px;
+    margin-bottom: 0;
     border-bottom: 1px solid var(--line);
-  }
-
-  .app-title {
-    font-size: 20px;
   }
 
   .tab-navigation {
@@ -52,38 +49,29 @@
 
   .pomodoro-timer {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .pomodoro-timer > * {
     grid-column: 1 / -1;
   }
 
-  .timer-header {
-    grid-column: 1;
-    grid-row: 1;
-    margin-bottom: 24px;
-  }
-
-  .timer-header h2,
   .todo-title {
     font-size: 32px;
   }
 
   .session-row {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: center;
-    margin: 0 0 24px 16px;
+    margin: 0 0 16px;
   }
 
-  .mode-selector {
+  .mode-selector,
+  .timer-display {
     width: 100%;
     max-width: 440px;
   }
 
   .timer-display {
-    padding: 12px 0 24px;
+    padding: 24px 0 8px;
   }
 
   .timer-circle {
@@ -178,13 +166,6 @@
     scrollbar-gutter: stable;
   }
 
-  .task-main {
-    align-items: center;
-  }
-
-  .task-name {
-    padding-block: 8px;
-  }
 }
 
 @media (min-width: 1280px) {
@@ -195,4 +176,84 @@
   .quadrant .tasks-list {
     min-height: 176px;
   }
+}
+
+/* Telegram desktop windows can be phone-width without being phone interfaces. */
+.app[data-telegram-desktop="true"] .app-shell {
+  padding-top: max(16px, var(--telegram-desktop-top, 0px));
+  padding-right: max(20px, var(--telegram-desktop-right, 0px));
+  padding-bottom: max(24px, var(--telegram-desktop-bottom, 0px));
+  padding-left: max(20px, var(--telegram-desktop-left, 0px));
+}
+
+@media (max-width: 1023px) {
+  :where(.app[data-telegram-desktop="true"]) .app-header {
+    padding-bottom: 12px;
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .tab-navigation {
+    position: static;
+    width: min(100%, 360px);
+    padding: 4px;
+    margin: 0 auto 20px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--surface);
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .tab-button {
+    min-height: 44px;
+    border-radius: 10px;
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .dashboard-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .pomodoro-timer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .pomodoro-timer > * {
+    grid-column: 1 / -1;
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .session-row {
+    margin: 0 0 16px;
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .mode-selector,
+  :where(.app[data-telegram-desktop="true"]) .timer-display,
+  :where(.app[data-telegram-desktop="true"]) .timer-controls {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .timer-display {
+    padding: 24px 0 8px;
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .timer-circle {
+    width: clamp(160px, calc(var(--telegram-desktop-height, 100dvh) * 0.32), 248px);
+    max-width: 100%;
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .timer-time {
+    font-size: clamp(48px, 14vw, 64px);
+  }
+
+  :where(.app[data-telegram-desktop="true"]) .dashboard-right {
+    padding-top: 0;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  :where(.app[data-telegram-desktop="true"]) .dashboard-main {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+
 }

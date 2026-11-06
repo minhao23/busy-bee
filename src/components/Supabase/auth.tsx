@@ -9,7 +9,6 @@ const initializeTelegramUser = async () => {
     let userId: string;
 
     if (import.meta.env.DEV) {
-      console.log("[DEV] Using mock authentication");
       const mockEmail = "dev_user@example.com";
       const password = "dev_passworD123";
 
@@ -55,11 +54,6 @@ const initializeTelegramUser = async () => {
         tgUser.id.toString(),
         "00000000-0000-0000-0000-000000000000"
       );
-      console.log("Telegram user ID:", telegramId);
-      console.log("Telegram username:", username);
-      console.log("Generated user ID:", userId);
-      console.log("this is in auth");
-
       const email = `${userId}@telegram.com`;
       const password = userId;
 
@@ -80,7 +74,6 @@ const initializeTelegramUser = async () => {
           email,
           password,
         });
-        console.log("signing in with password");
         if (signInError) throw signInError;
       }
 
@@ -102,8 +95,6 @@ const initializeTelegramUser = async () => {
       if (!user) throw new Error("Telegram user missing from session");
 
       userId = user.id;
-      console.log("Telegram user initialized:", user);
-      console.log("session:", session);
     }
 
     // Check for existing profile
@@ -114,11 +105,9 @@ const initializeTelegramUser = async () => {
       .single();
 
     if (existingUser) {
-      console.log("Existing profile found:", existingUser);
       return existingUser;
     }
 
-    console.log("Creating new profile...");
     const { data: newUser, error: insertError } = await supabase
       .from("User")
       .insert({
@@ -130,7 +119,6 @@ const initializeTelegramUser = async () => {
       .select()
       .single();
 
-    console.log("username:", username);
     if (insertError) throw insertError;
     return newUser;
   } catch (error) {

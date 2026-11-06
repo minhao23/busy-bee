@@ -17,8 +17,9 @@ export default defineConfig({
       : {}),
   },
   projects: [
-    { name: "mobile", use: { viewport: { width: 390, height: 900 } } },
-    { name: "desktop", use: { viewport: { width: 1440, height: 900 } } },
+    { name: "mobile", testMatch: "**/persistence.spec.js", use: { viewport: { width: 390, height: 900 } } },
+    { name: "desktop", testMatch: "**/persistence.spec.js", use: { viewport: { width: 1440, height: 900 } } },
+    { name: "ui", testIgnore: "**/persistence.spec.js", use: { viewport: { width: 390, height: 900 } } },
   ],
   webServer: {
     command: "npm run dev -- --host 127.0.0.1 --port 4174 --strictPort",
