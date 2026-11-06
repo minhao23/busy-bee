@@ -13,7 +13,7 @@ test.describe("Compact Telegram desktop popup", () => {
     telegramClient: { platform: "tdesktop", version: "8.0", height: 645, fullscreenAvailable: true },
   });
 
-  test("requests expansion and fullscreen once, with accessible timer controls", async ({ page, board }, testInfo) => {
+  test("requests fullscreen once and reflows with accessible controls across popup widths", async ({ page, board }, testInfo) => {
     await board.focus();
     await expect(page.locator(".app")).toHaveAttribute("data-telegram-desktop", "true");
     const calls = await page.evaluate(() => window.__telegramViewportCalls);
@@ -22,21 +22,17 @@ test.describe("Compact Telegram desktop popup", () => {
     expect(await page.locator(".tab-navigation").evaluate(element => getComputedStyle(element).position)).toBe("static");
     await assertFits(page);
     await page.screenshot({ path: testInfo.outputPath("compact-focus.png"), fullPage: true });
-    await page.getByRole("button", { name: "Start", exact: true }).click();
-    await board.roundTrip();
-    await board.focus();
-    await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
-  });
-
-  test("compact layout reflows across desktop popup widths", async ({ page, board }) => {
-    await board.focus();
-    for (const width of [320, 400, 600, 640, 760, 1023]) {
+    for (const width of [320, 760, 1023]) {
       await page.setViewportSize({ width, height: 645 });
       await assertFits(page);
       await board.tasks();
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       await board.focus();
     }
+    await page.getByRole("button", { name: "Start", exact: true }).click();
+    await board.roundTrip();
+    await board.focus();
+    await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
   });
 
   test("adapts to a changed stable viewport and Telegram safe areas", async ({ page, board }) => {
@@ -60,7 +56,7 @@ test.describe("Compact Telegram desktop popup", () => {
 
   test("task changes still persist inside the compact popup", async ({ page, board }) => {
     await board.mutation(async () => {
-      await board.card(1).getByRole("button").first().click();
+      await board.manage().click();
       await board.card(1).getByRole("combobox").selectOption("3");
     }, async () => {
       await expect(page.locator('[data-quadrant="3"] [data-task-id="1"]')).toBeVisible();

@@ -3,15 +3,14 @@ import supabase from "../utils/supabase";
 import "./TaskBoard.css";
 import { getID, useTasks } from "./Supabase/TaskLogic";
 import audioManager from "../utils/audioManager";
-import TaskCard, { Importance, quadrants } from "./TaskCard";
+import TaskCard from "./TaskCard";
+import { Importance, quadrants } from "../utils/taskPriorities";
 import Icon from "./Icon";
 
 const TodoList: React.FC = () => {
   const [newTaskName, setNewTaskName] = useState("");
   const { setTasks, tasks, fetchTasks, completedTasks, isLoading, loadError } = useTasks();
-  const [selectedImportance, setSelectedImportance] = useState<1 | 2 | 3 | 4>(
-    1
-  );
+  const [selectedImportance, setSelectedImportance] = useState<Importance>(1);
   const [activeDropZone, setActiveDropZone] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -190,7 +189,7 @@ const TodoList: React.FC = () => {
             disabled={saving}
             value={selectedImportance}
             onChange={(e) =>
-              setSelectedImportance(parseInt(e.target.value) as 1 | 2 | 3 | 4)
+              setSelectedImportance(Number(e.target.value) as Importance)
             }
           >
             {quadrants.map((q) => (

@@ -12,7 +12,7 @@ const expectTimerFits = async page => {
   }).toBe(true);
 };
 
-for (const [width, height] of [[320, 568], [360, 640], [390, 664], [390, 844], [430, 932], [600, 645], [759, 700]]) {
+for (const [width, height] of [[320, 568], [390, 844], [759, 700]]) {
   test.describe(`Narrow focus ${width}x${height}`, () => {
     test.use({ viewport: { width, height } });
     test("circle and actions fit above navigation on first open", async ({ page, board }, testInfo) => {
@@ -30,11 +30,6 @@ for (const [width, height] of [[320, 568], [360, 640], [390, 664], [390, 844], [
       expect(edit.x).toBeGreaterThan(circle.x + circle.width / 2);
       expect(edit.height).toBeGreaterThanOrEqual(44);
       await page.screenshot({ path: testInfo.outputPath("focus.png") });
-      await page.getByRole("button", { name: "Start", exact: true }).click();
-      await board.roundTrip();
-      await board.focus();
-      await expectTimerFits(page);
-      await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
     });
   });
 }

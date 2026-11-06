@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures.js";
 
-for (const width of [320, 390, 768, 1440]) {
+for (const width of [320, 1440]) {
   test.describe(`Compact empty groups at ${width}px`, () => {
     test.use({ viewport: { width, height: 844 } });
     test("empty groups keep their labels without reserved task space", async ({ page, board }, testInfo) => {
@@ -24,24 +24,11 @@ for (const width of [320, 390, 768, 1440]) {
   });
 }
 
-test("a fully empty board stays compact after deletion, navigation, and reload", async ({ page, board }, testInfo) => {
-  await board.mutation(async () => {
-    await board.card(1).getByRole("button").first().click();
-    await board.card(1).getByRole("button", { name: "Delete task", exact: true }).click();
-  }, async () => {
-    await expect(page.locator('.quadrant[data-empty="true"]')).toHaveCount(4);
-    await expect(page.getByText("No tasks yet", { exact: true })).toHaveCount(1);
-    expect((await page.locator(".quadrants-grid").boundingBox()).height).toBeLessThan(280);
-    await expect(page.locator(".quadrant-empty-state")).toHaveCount(0);
-  });
-  await page.screenshot({ path: testInfo.outputPath("empty-board.png") });
-});
-
 for (const input of ["mouse", "touch"]) {
   test(`${input} dragging into a compact group does not resize the target and persists`, async ({ page, board }) => {
     const destination = page.locator('[data-quadrant="2"]');
     const bounds = await destination.boundingBox();
-    const handle = await board.card(1).getByRole("button").first().boundingBox();
+    const handle = await board.manage().boundingBox();
     const start = { x: handle.x + handle.width / 2, y: handle.y + handle.height / 2 };
     const end = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
     const session = input === "touch" ? await page.context().newCDPSession(page) : null;

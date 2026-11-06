@@ -108,6 +108,7 @@ export const test = base.extend({
     const tasks = () => page.getByRole("button", { name: "Tasks", exact: true }).click();
     const focus = () => page.getByRole("button", { name: "Focus", exact: true }).click();
     const card = id => page.locator(`#tasks-panel [data-task-id="${id}"]`);
+    const manage = (id = 1) => card(id).getByRole("button", { name: /^Move or manage / });
     const add = page.locator(".task-input-container button[type='submit']");
     const roundTrip = async () => {
       const count = writes.length;
@@ -152,11 +153,16 @@ export const test = base.extend({
         pending.release.resolve();
       }
     };
+    const seedTasks = async tasks => {
+      rows = tasks.map(task => ({ ...task }));
+      nextId = Math.max(0, ...rows.map(task => task.id)) + 1;
+      await reload();
+    };
 
     await page.goto("/");
     await tasks();
     await expect(card(1)).toBeVisible();
-    await use({ tasks, focus, card, roundTrip, mutation, rows: () => rows, writes });
+    await use({ tasks, focus, card, manage, roundTrip, reload, seedTasks, mutation, rows: () => rows, writes });
     expect(routeErrors, "Mock database contract violations").toEqual([]);
     expect(errors, "Uncaught browser errors").toEqual([]);
   },

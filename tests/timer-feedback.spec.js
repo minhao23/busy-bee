@@ -16,11 +16,12 @@ test("mode color changes immediately without changing the app branding", async (
     await expect(page.locator(".progress-ring-fill")).toHaveCSS("stroke", color);
     await expect(page.locator(".control-button.primary")).toHaveCSS("background-color", color);
     await expect(page.locator(".app-title svg")).toHaveCSS("color", "rgb(232, 197, 149)");
+    await expectModeContrast(page);
     await page.screenshot({ path: testInfo.outputPath(`${mode}.png`) });
   }
 });
 
-test("inline duration editing does not change the timer until a field changes", async ({ page, board }) => {
+test("duration editing does not change the timer until a field changes", async ({ page, board }) => {
   await board.focus();
   const edit = page.getByRole("button", { name: "Custom timer", exact: true });
   await expect(page.getByText("Custom duration", { exact: true })).toHaveCount(0);
@@ -45,22 +46,29 @@ test("inline duration editing does not change the timer until a field changes", 
   await expect(edit).toBeDisabled();
 });
 
-test("elapsed progress advances, survives pause, and resets", async ({ page, board }) => {
+test("elapsed progress and running/paused state survive screen switches and reset", async ({ page, board }) => {
   await board.focus();
   await page.clock.install();
   const ring = page.locator(".progress-ring-fill");
   const initial = Number(await ring.getAttribute("stroke-dashoffset"));
   await page.getByRole("button", { name: "Start", exact: true }).click();
+  await board.tasks();
   await page.clock.fastForward(5 * 60 * 1000);
+  await board.focus();
+  await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
   await expect(page.getByRole("timer")).toHaveText("20:00");
   const advanced = Number(await ring.getAttribute("stroke-dashoffset"));
   expect(advanced).toBeCloseTo(initial * .8, 2);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await board.tasks();
   await page.clock.fastForward(60 * 1000);
+  await board.focus();
+  await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
   await expect(page.getByRole("timer")).toHaveText("20:00");
   expect(Number(await ring.getAttribute("stroke-dashoffset"))).toBe(advanced);
   await page.getByRole("button", { name: "Reset", exact: true }).click();
   expect(Number(await ring.getAttribute("stroke-dashoffset"))).toBe(initial);
+  expect(board.writes).toHaveLength(0);
 });
 
 test("completed work sessions fill the cycle and select the correct break color", async ({ page, board }) => {
@@ -84,7 +92,7 @@ test("completed work sessions fill the cycle and select the correct break color"
   await expect(page.locator(".pomodoro-timer")).toHaveAttribute("data-mode", "work");
 });
 
-test("custom validation and alarm dismissal still work with inline editing", async ({ page, board }) => {
+test("custom validation and alarm dismissal work with duration editing", async ({ page, board }) => {
   await board.focus();
   await page.clock.install();
   await page.getByRole("button", { name: "Custom timer", exact: true }).click();
@@ -100,28 +108,24 @@ test("custom validation and alarm dismissal still work with inline editing", asy
   await expect(page.getByRole("timer")).toHaveText("25:00");
 });
 
-test("sampled mode, navigation, and edit text meets AA contrast", async ({ page, board }) => {
-  await board.focus();
-  for (const [label] of themes) {
-    await page.getByRole("button", { name: label, exact: true }).click();
-    const ratios = await page.evaluate(() => {
-      const rgb = color => color.match(/[\d.]+/g).slice(0, 3).map(Number);
-      const luminance = channels => channels.map(c => {
-        const value = c / 255;
-        return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
-      }).reduce((sum, c, i) => sum + c * [.2126, .7152, .0722][i], 0);
-      const canvas = rgb(getComputedStyle(document.querySelector(".app")).backgroundColor);
-      return [...document.querySelectorAll(".mode-button, .tab-button, .custom-button, .timer-mode, .control-button.primary")].map(element => {
-        let background = canvas;
-        for (let ancestor = element; ancestor; ancestor = ancestor.parentElement) {
-          const color = getComputedStyle(ancestor).backgroundColor;
-          if (color !== "rgba(0, 0, 0, 0)") { background = rgb(color); break; }
-        }
-        const a = luminance(rgb(getComputedStyle(element).color));
-        const b = luminance(background);
-        return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
-      });
+async function expectModeContrast(page) {
+  const ratios = await page.evaluate(() => {
+    const rgb = color => color.match(/[\d.]+/g).slice(0, 3).map(Number);
+    const luminance = channels => channels.map(c => {
+      const value = c / 255;
+      return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+    }).reduce((sum, c, i) => sum + c * [.2126, .7152, .0722][i], 0);
+    const canvas = rgb(getComputedStyle(document.querySelector(".app")).backgroundColor);
+    return [...document.querySelectorAll(".mode-button, .tab-button, .custom-button, .timer-mode, .control-button.primary")].map(element => {
+      let background = canvas;
+      for (let ancestor = element; ancestor; ancestor = ancestor.parentElement) {
+        const color = getComputedStyle(ancestor).backgroundColor;
+        if (color !== "rgba(0, 0, 0, 0)") { background = rgb(color); break; }
+      }
+      const a = luminance(rgb(getComputedStyle(element).color));
+      const b = luminance(background);
+      return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
     });
-    expect(Math.min(...ratios)).toBeGreaterThanOrEqual(4.5);
-  }
-});
+  });
+  expect(Math.min(...ratios)).toBeGreaterThanOrEqual(4.5);
+}

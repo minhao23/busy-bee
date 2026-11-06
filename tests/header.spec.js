@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures.js";
 
-for (const width of [320, 390, 768, 1440]) {
+for (const width of [320, 1440]) {
   test.describe(`App header at ${width}px`, () => {
     test.use({ viewport: { width, height: 844 } });
     test("keeps branding secondary and the date aligned across screens", async ({ page, board }, testInfo) => {

@@ -1,9 +1,11 @@
 # Browser Tests
 
 These Playwright tests check task persistence across screen switches and reloads,
-including switching screens while a save is pending. Each case runs at mobile
-(390px) and desktop (1440px) widths. Telegram host tests also exercise compact
-desktop popup widths independently of those project defaults.
+including switching screens while a save is pending. There are 43 test executions:
+8 core persistence cases run in both `mobile` (390px) and `desktop` (1440px)
+projects; 27 layout, timer, and Telegram checks run once in the `ui` project.
+Viewport-specific cases use representative sizes rather than repeating the
+same fixed viewport in both device projects.
 
 ## Run
 
@@ -22,6 +24,7 @@ Run a subset or open the interactive runner:
 
 ```sh
 npm test -- --project=mobile
+npm test -- --project=ui
 npm test -- --grep "moving a task"
 npm run test:ui
 ```
@@ -47,13 +50,21 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/Ma
 - Android/iOS guards preserving phone navigation and avoiding desktop fullscreen.
 - Narrow focus circle/action visibility from 320x568 through 759x700.
 - Timer resizing, custom fields, and scrollable doubled-text layouts.
-- App-header hierarchy, date semantics, alignment, and screenshots at phone, tablet, and desktop widths.
+- App-header hierarchy, date semantics, alignment, and screenshots at phone and desktop widths.
 - Work, Short Break, and Long Break colors, plus sampled enabled-text AA contrast.
-- Inline duration editing, validation, alarm dismissal, and a full four-session Pomodoro cycle.
+- Duration editing, validation, alarm dismissal, and a full four-session Pomodoro cycle.
 - Mock-clock progress advancement, pause, and reset.
 - Compact empty priority groups and a single board-level empty message.
 - Mouse/touch drops into compact targets without resizing, plus persistence across navigation and reload.
-- Short/long task names, three-line previews, full-name disclosure, keyboard use, and completion persistence.
+- Short/long task names, three-line previews, full-name disclosure, keyboard use, and completed-task rendering.
+
+Related lifecycle checks share a case: completion/reopening, deletion/empty state,
+timer progress/screen-switch continuity, and mode color/contrast. Distinct failure
+paths and mouse/touch input checks remain separate.
+
+`tests/fixtures.js` provides `board.manage(id)` for the task management handle,
+`board.seedTasks(records)` for rendering fixtures, and `board.mutation(...)` for
+pending-save, navigation, exactly-one-write, and reload assertions.
 
 The server uses dummy Supabase credentials. Browser requests to the mock database
 are intercepted, and other external requests are blocked. Fixture records survive

@@ -1,6 +1,5 @@
-import React from "react";
 import { Task } from "../../types";
-import { quadrants } from "../TaskCard";
+import { quadrants } from "../../utils/taskPriorities";
 
 type Props = {
   tasks: Task[];

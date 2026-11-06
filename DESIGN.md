@@ -384,3 +384,12 @@ The sidecar previews use self-contained standard HTML, inline SVG, scoped `ds-` 
 - Don't turn drag-and-drop into the only way to move a task.
 - Don't treat synthetic browser checks as live database or native Telegram verification.
 - Don't copy inactive legacy styles or promote isolated defects into new reusable tokens.
+
+## Current Automated Coverage
+
+The consolidated suite has 43 executions. Core task persistence runs at 390px
+and 1440px; viewport-specific UI tests run once, using 320px/1440px for headers,
+task names, and empty groups, and 320x568, 390x844, and 759x700 for narrow timer
+layout. Resize, enlarged-text, mouse/touch, timer-cycle, and Telegram fallback
+checks remain. Earlier verification counts and viewport lists above describe
+historical runs, not the current suite. See `tests/README.md` for current coverage.

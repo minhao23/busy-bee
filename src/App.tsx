@@ -13,8 +13,7 @@ declare global {
   interface Window {
     Telegram: any;
   }
-} // this is purely to deal with typescript typechecking,
-// an issue that would not be present in JS
+}
 
 // Mock setup that matches both window.Telegram.WebApp and @twa-dev/sdk WebApp
 if (import.meta.env.DEV) {
@@ -27,9 +26,9 @@ if (import.meta.env.DEV) {
           username: "test_user",
         },
       },
-      ready: () => console.log("Telegram.WebApp.ready() called"),
-      expand: () => console.log("Telegram.WebApp.expand() called"),
-      close: () => console.log("Telegram.WebApp.close() called"),
+      ready: () => {},
+      expand: () => {},
+      close: () => {},
     };
     (window as any)["Telegram"] = { WebApp: mockWebApp };
     (window as any)["WebApp"] = mockWebApp;
@@ -46,8 +45,6 @@ function App() {
     let cleanupViewport: (() => void) | undefined;
     const initTelegram = async () => {
       try {
-        console.log("Initializing Telegram WebApp...");
-
         const telegramWebApp = window.Telegram?.WebApp;
 
         if (!telegramWebApp) {
@@ -60,9 +57,7 @@ function App() {
         telegramWebApp.setBackgroundColor?.("#1b3c53");
         cleanupViewport = configureDesktopViewport(telegramWebApp);
         audioManager.init();
-        // Else, we will initialise the user, and set the session (done in the initializeTelegramUser function)
-        const user = await initializeTelegramUser();
-        console.log("Telegram user initialized:", user);
+        await initializeTelegramUser();
       } catch (error) {
         console.error("Initialization error:", error);
       }

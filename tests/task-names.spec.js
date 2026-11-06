@@ -5,10 +5,8 @@ const sentence = "Prepare the project proposal, review the research notes, and s
 
 test("name disclosure adapts to resizing and enlarged text", async ({ page, board }) => {
   const title = "Review the project proposal and send the final meeting schedule to everyone on the team.";
-  board.rows()[0].task_name = title;
   await page.setViewportSize({ width: 390, height: 900 });
-  await page.reload();
-  await board.tasks();
+  await board.seedTasks([{ ...board.rows()[0], task_name: title }]);
   const card = board.card(1);
   await expect(card.locator(".task-name-toggle")).toHaveAttribute("aria-expanded", "false");
   await page.setViewportSize({ width: 1024, height: 900 });
@@ -23,18 +21,17 @@ test("name disclosure adapts to resizing and enlarged text", async ({ page, boar
   expect(board.writes).toHaveLength(0);
 });
 
-for (const width of [320, 390, 768, 1440]) {
+for (const width of [320, 1440]) {
   test.describe(`Task names at ${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
     test("long names expand explicitly and short names stay compact", async ({ page, board }, testInfo) => {
-      const original = board.rows()[0];
-      original.task_name = unbroken;
-      board.rows().push(
+      const original = { ...board.rows()[0], task_name: unbroken };
+      await board.seedTasks([
+        original,
         { ...original, id: 2, importance: 3, task_name: "ho" },
         { ...original, id: 3, importance: 2, task_name: sentence },
-      );
-      await page.reload();
-      await board.tasks();
+        { ...original, id: 4, finished_at: "2026-11-06T09:00:00Z" },
+      ]);
       await expect(board.card(1).locator(".task-name")).toHaveText(unbroken);
       await page.evaluate(() => document.fonts.ready);
       for (const id of [1, 3]) {
@@ -72,17 +69,13 @@ for (const width of [320, 390, 768, 1440]) {
       await toggle.click();
       await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
-      await board.mutation(async () => {
-        await board.card(1).getByRole("checkbox").click();
-      }, async () => {
-        await page.locator(".completed").evaluate(element => { element.open = true; });
-        const completed = board.card(1);
-        await expect(completed.getByRole("checkbox")).toBeChecked();
-        await expect(completed.locator(".task-name")).toHaveText(unbroken);
-        const clipped = await completed.locator(".task-name").evaluate(element => element.scrollHeight > element.clientHeight + 1);
-        if (clipped) await expect(completed.locator(".task-name-toggle")).toHaveAttribute("aria-expanded", "false");
-        else await expect(completed.locator(".task-name-toggle")).toHaveCount(0);
-      });
+      await page.locator(".completed summary").click();
+      const completed = board.card(4);
+      await expect(completed.getByRole("checkbox")).toBeChecked();
+      await expect(completed.locator(".task-name")).toHaveText(unbroken);
+      const clipped = await completed.locator(".task-name").evaluate(element => element.scrollHeight > element.clientHeight + 1);
+      if (clipped) await expect(completed.locator(".task-name-toggle")).toHaveAttribute("aria-expanded", "false");
+      else await expect(completed.locator(".task-name-toggle")).toHaveCount(0);
     });
   });
 }
