@@ -250,19 +250,29 @@ Computed stable-state browser checks cover Focus, custom fields, mode hover, the
 - **Body:** task names and entry text use `--text-body` (1rem / 16px). Task names keep a 1.55 line height and a 500 weight on both mobile and desktop.
 - **Label:** supporting copy and fields use `--text-label` (0.875rem / 14px). Mode controls use 600 weight; navigation uses 15px/600; primary controls use `control`.
 - **Metadata:** `--text-small` (0.8125rem / 13px) is reserved for short counts, board instructions, quadrant descriptions, authors, and priority badges. Descriptions use 1.55 leading and reserve two lines on phones. Do not use metadata sizes for task content.
-- **Counts:** the task header uses one 14px supporting line, "N open, N completed", beneath the heading. No oversized metric blocks or repetitive subtitle. Timer and numeric counts use tabular figures. Task names wrap anywhere instead of truncating essential content.
+- **Counts:** the task header uses one 14px supporting line, "N open, N completed", beneath the heading on mobile and opposite it on desktop. No oversized metric blocks or repetitive subtitle. Timer and numeric counts use tabular figures. Task names wrap anywhere instead of truncating essential content.
 
 **The One Family Rule.** Use the bundled variable Satoshi across headings, body, and controls. Keep its real weight range; do not substitute an invented display or monospace font.
 
 ## Layout
 
-The centered app shell caps at 1040px. Mobile uses 20px horizontal padding, a top inset of `max(20px, env(safe-area-inset-top))`, and bottom space of `calc(100px + env(safe-area-inset-bottom))` for navigation. At widths up to 360px, horizontal padding becomes 12px and quadrant padding becomes 9px. The supported body minimum is 320px.
+The centered app shell caps at 1040px below the desktop breakpoint. Mobile uses 20px horizontal padding, a top inset of `max(20px, env(safe-area-inset-top))`, and bottom space of `calc(100px + env(safe-area-inset-bottom))` for navigation. At widths up to 360px, horizontal padding becomes 12px and quadrant padding becomes 9px. The supported body minimum is 320px.
 
 Below 760px, two equal navigation buttons sit in a fixed full-width bottom bar with a top line and safe-area bottom padding. The bar uses a centered 440px control region on wider phones. At 760px and above, navigation becomes static, 280px wide, with 4px inset and an 18px enclosing curve; shell padding becomes 32px 32px 60px.
 
-Focus stacks with a 32px gap on mobile. At 760px it becomes a 1.2fr/1fr split with a 48px gap. The timer ring is `min(248px, 100%)` on mobile and 280px on desktop; mode and control rows cap at 400px on mobile. The timer controls allocate 1.5fr to the primary action and 1fr to the secondary.
+Focus stacks with a 32px gap on mobile. At 760px it becomes a 1.2fr/1fr split with a 48px gap. The timer ring is `min(248px, 100%)` on mobile and 280px from 760px to 1023px; mode and control rows cap at 400px on mobile. The timer controls allocate 1.5fr to the primary action and 1fr to the secondary.
 
-The Eisenhower board remains two-by-two at every supported width. Its gap is 10px on mobile and 16px at 760px; quadrant inset grows from 12px to 20px. Each task list has a 112px minimum and 280px maximum height with internal vertical scrolling. The title stays within 15ch on mobile; the desktop title removes that cap.
+The Eisenhower board remains two-by-two below 1280px. Its gap is 10px on mobile and 16px at 760px; quadrant inset grows from 12px to 20px. Below 1024px each task list has a 112px minimum and 280px maximum height with internal vertical scrolling. The title stays within 15ch on mobile; wider layouts remove that cap.
+
+### Desktop Enhancements
+All desktop overrides live in `src/Desktop.css`, loaded after component styles and restricted to `min-width: 1024px`. Existing phone and tablet layouts remain unchanged.
+
+- **Workspace:** a 1280px-capped shell with 40px horizontal padding. Brand, centered navigation, and date share one toolbar row; a divider separates it from the working area.
+- **Focus:** the timer leads a 1.4fr supporting-column split with a 64px gap. Session counts sit beside the 32px heading. The ring scales from 300px to 380px with viewport height; countdown text scales from 72px to 96px. Mode selection caps at 440px and timer actions at 380px.
+- **Tasks:** the heading and compact status share a row. Task entry, priority, and Add task share a second row. The desktop task field has a full control outline and 10px corners.
+- **Board:** compact desktops retain two columns; at 1280px all four priorities sit in one row. Quadrants use 18px insets. Task-list maximum height follows `clamp(240px, calc(100vh - 340px), 600px)`; minimum height is 112px on compact desktops and 176px on wide desktops.
+
+Desktop verification used headless Chrome with isolated Supabase fixtures at widths through 1920px. All 32 phone/tablet state comparisons below 1024px passed screenshot checks with a small glyph-antialiasing tolerance and exact computed-style comparisons with desktop CSS enabled/disabled. Desktop mouse dragging, deletion, dense/empty boards, 200% root text scaling, and timer controls at 768px viewport height passed. No live database writes or physical-device checks were performed.
 
 The frontmatter spacing vocabulary records reused observed values, not a newly imposed mathematical scale. Keep compact control gaps distinct from 24–32px section separation and the 48px desktop split.
 
@@ -279,7 +289,7 @@ Resting screens are flat, using canvas/work/raised tones and thin lines for hier
 
 ## Shapes
 
-Soft curves distinguish controls from containers: 6px badges and move handles, 8px destination selects, 10px compact controls/tasks, 12px floating preview, 14px main buttons and mode-strip shell, 16px quadrants, and 18px larger containers/navigation enclosure. Only session dots and the timer ring use circular geometry. The task-name input stays square and underlined, rather than inheriting a rounded full border.
+Soft curves distinguish controls from containers: 6px badges and move handles, 8px destination selects, 10px compact controls/tasks, 12px floating preview, 14px main buttons and mode-strip shell, 16px quadrants, and 18px larger containers/navigation enclosure. Only session dots and the timer ring use circular geometry. The task-name input stays square and underlined below 1024px; desktop uses a rounded full border.
 
 Lines are 1px where used for separators and field borders; 20px checkboxes have a clearer 2px control outline and a CSS-drawn check. Forced-color mode restores native checkbox rendering. A quadrant reserves a transparent 1px border at rest so its active-drop border does not change layout. Icons are small inline stroked SVGs, usually 20px, with 19px navigation and 16px delete variants; do not replace them with character glyphs.
 

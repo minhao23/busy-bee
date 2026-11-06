@@ -1,0 +1,198 @@
+/* Desktop enhancements are isolated from the approved phone and tablet layouts. */
+@media (min-width: 1024px) {
+  .app-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
+    width: min(100%, 1280px);
+    padding: 24px 40px 64px;
+  }
+
+  .app-header {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 80px;
+    padding: 0 0 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .app-title {
+    font-size: 20px;
+  }
+
+  .tab-navigation {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    align-self: start;
+    width: 300px;
+    margin: 0;
+    background: var(--surface);
+    border: 0;
+    border-radius: 14px;
+  }
+
+  .tab-button {
+    border-radius: 10px;
+  }
+
+  .app-main {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .dashboard-main {
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+    column-gap: 64px;
+  }
+
+  .dashboard-right {
+    padding-top: 0;
+  }
+
+  .pomodoro-timer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .pomodoro-timer > * {
+    grid-column: 1 / -1;
+  }
+
+  .timer-header {
+    grid-column: 1;
+    grid-row: 1;
+    margin-bottom: 24px;
+  }
+
+  .timer-header h2,
+  .todo-title {
+    font-size: 32px;
+  }
+
+  .session-row {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin: 0 0 24px 16px;
+  }
+
+  .mode-selector {
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .timer-display {
+    padding: 12px 0 24px;
+  }
+
+  .timer-circle {
+    width: clamp(300px, 40vh, 380px);
+  }
+
+  .timer-time {
+    font-size: clamp(72px, 8vw, 96px);
+  }
+
+  .timer-mode {
+    font-size: var(--text-body);
+  }
+
+  .timer-controls {
+    width: 100%;
+    max-width: 380px;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 12px;
+  }
+
+  .tasks-box {
+    padding: 24px;
+  }
+
+  .upcoming-heading {
+    margin-bottom: 20px;
+  }
+
+  .upcoming-task {
+    padding-block: 16px;
+  }
+
+  .quote-box {
+    text-align: left;
+    padding-inline: 4px;
+  }
+
+  .quote-text {
+    margin-inline: 0;
+  }
+
+  .todo-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .todo-summary-status {
+    margin: 0;
+  }
+
+  .task-input-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-radius: 14px;
+  }
+
+  .task-input-container input {
+    padding-inline: 12px;
+    background: var(--canvas);
+    border: 1px solid var(--control-line);
+    border-radius: 10px;
+  }
+
+  .task-type-row {
+    margin: 0;
+  }
+
+  .task-type-row select {
+    flex: 0 1 252px;
+    width: 252px;
+    min-height: 48px;
+  }
+
+  .task-type-row button {
+    min-height: 48px;
+    padding-inline: 20px;
+  }
+
+  .quadrant {
+    padding: 18px;
+  }
+
+  .quadrant .tasks-list {
+    min-height: 112px;
+    max-height: clamp(240px, calc(100vh - 340px), 600px);
+    scrollbar-gutter: stable;
+  }
+
+  .task-main {
+    align-items: center;
+  }
+
+  .task-name {
+    padding-block: 8px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .quadrants-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .quadrant .tasks-list {
+    min-height: 176px;
+  }
+}

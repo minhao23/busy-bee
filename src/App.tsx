@@ -6,6 +6,7 @@ import Dashboard from "./components/Dashboard";
 import { TaskProvider } from "./components/Supabase/TaskLogic";
 import audioManager from "./utils/audioManager";
 import Icon from "./components/Icon";
+import "./Desktop.css";
 
 declare global {
   interface Window {
