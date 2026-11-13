@@ -22,6 +22,8 @@ class AudioManager {
 
     init() {
         (Object.entries(audioConfig) as [AudioKey, string][]).forEach(([key, path]) => {
+            // React remounts must reuse players so stop() never loses a playing element.
+            if (this.audioMap.has(key)) return;
             const audio = new Audio(path);
             audio.preload = "auto";
             audio.load();
@@ -29,10 +31,11 @@ class AudioManager {
         });
     }
 
-    play(key: AudioKey, loop = false) {
+    play(key: AudioKey) {
         try {
             const audio = this.getAudio(key);
-            audio.loop = loop;
+            audio.pause();
+            audio.loop = false;
             audio.currentTime = 0;
             audio.play().catch((e) => console.error(`failed to play audio "${key}":`, e));
         } catch (err) {

@@ -12,7 +12,7 @@ const TIMER_DURATIONS = {
   custom: 0, // will never use this, only for type consistency
 } as const;
 
-const ALARM_DURATION = 4;
+const ALARM_DISMISS_DELAY = 4;
 
 const PomodoroTimer: React.FC = () => {
   const [mode, setMode] = useState<TimerMode>("work");
@@ -173,23 +173,22 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const handleTimerComplete = () => {
+    if (alarmTimerRef.current !== null) return;
     setIsActive(false);
     setIsAlarmRinging(true);
     deadlineRef.current = null;
     refreshReminder.current = true;
 
-    // Play alarm
-    const loop = true;
-    audioManager.play("alarm", loop);
+    audioManager.play("alarm");
 
-    // Play alarm until timer is up
+    // The short clip ends itself; this delay only advances the timer UI.
     alarmTimerRef.current = window.setTimeout(() => {
       handleAlarmDismiss();
-    }, ALARM_DURATION * 1000);
+    }, ALARM_DISMISS_DELAY * 1000);
   };
 
   const handleAlarmDismiss = () => {
-    if (!alarmTimerRef.current) return;
+    if (alarmTimerRef.current === null) return;
     stopAlarm();
     setIsAlarmRinging(false);
 

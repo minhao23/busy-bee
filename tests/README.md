@@ -1,9 +1,9 @@
 # Browser Tests
 
 These Playwright tests check task persistence across screen switches and reloads,
-including switching screens while a save is pending. There are 45 test executions:
+including switching screens while a save is pending. There are 46 test executions:
 8 core persistence cases run in both `mobile` (390px) and `desktop` (1440px)
-projects; 29 layout, timer, and Telegram checks run once in the `ui` project.
+projects; 30 layout, timer, and Telegram checks run once in the `ui` project.
 Viewport-specific cases use representative sizes rather than repeating the
 same fixed viewport in both device projects.
 
@@ -53,6 +53,9 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/Ma
 - App-header hierarchy, date semantics, alignment, and screenshots at phone and desktop widths.
 - Work, Short Break, and Long Break colors, plus sampled enabled-text AA contrast.
 - Duration editing, validation, alarm dismissal, and a full four-session Pomodoro cycle.
+- Native alarm playback: a two-second non-looping clip, natural completion while
+  JavaScript is busy, repeated initialization without orphaned players, and immediate
+  audio stopping on Dismiss.
 - Mock-clock progress advancement, pause, and reset.
 - Bot reminder start/pause/resume/reset, reload restoration, and server-owned completion.
 - Failed reminder saves and reconciliation of a committed write with a lost response.

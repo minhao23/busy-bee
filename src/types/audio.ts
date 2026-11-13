@@ -1,6 +1,6 @@
 
 const audioConfig = {
-  alarm: "/audio_files/alarm.wav",
+  alarm: "/audio_files/alarm.wav?v=short-2s",
   add: "audio_files/complete.wav",
   complete: "audio_files/complete.wav",
   emptyAdd: "audio_files/emptyAdd.mp3",
