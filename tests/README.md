@@ -1,9 +1,9 @@
 # Browser Tests
 
 These Playwright tests check task persistence across screen switches and reloads,
-including switching screens while a save is pending. There are 43 test executions:
+including switching screens while a save is pending. There are 45 test executions:
 8 core persistence cases run in both `mobile` (390px) and `desktop` (1440px)
-projects; 27 layout, timer, and Telegram checks run once in the `ui` project.
+projects; 29 layout, timer, and Telegram checks run once in the `ui` project.
 Viewport-specific cases use representative sizes rather than repeating the
 same fixed viewport in both device projects.
 
@@ -54,6 +54,8 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/Ma
 - Work, Short Break, and Long Break colors, plus sampled enabled-text AA contrast.
 - Duration editing, validation, alarm dismissal, and a full four-session Pomodoro cycle.
 - Mock-clock progress advancement, pause, and reset.
+- Bot reminder start/pause/resume/reset, reload restoration, and server-owned completion.
+- Failed reminder saves and reconciliation of a committed write with a lost response.
 - Compact empty priority groups and a single board-level empty message.
 - Mouse/touch drops into compact targets without resizing, plus persistence across navigation and reload.
 - Short/long task names, three-line previews, full-name disclosure, keyboard use, and completed-task rendering.
@@ -70,11 +72,17 @@ The server uses dummy Supabase credentials. Browser requests to the mock databas
 are intercepted, and other external requests are blocked. Fixture records survive
 reloads within each test, but never touch a real database. These tests verify the
 client's persistence contract, not live Supabase authorization or durability.
+Reminder API calls are mocked at the local test origin; no Telegram message is sent.
+The fixture only supplies signed-data stand-ins for the two reminder cases, so the
+remaining timer tests continue exercising the standalone local timer.
 Telegram platform and viewport APIs are mocked too; fullscreen tests verify the
 request and fallback behavior, not whether the native client resizes its window.
 
-Task persistence is checked across reloads. Timer and draft state are checked
-only across screen switches; they are not currently stored across reloads.
+Task persistence is checked across reloads. With bot reminders configured, running
+and paused timer state is also checked across reloads. Standalone timer state,
+the session-cycle counter, and unsaved task drafts remain local to the Mini App instance.
+Bot/Supabase setup and delivery limitations are documented in the companion
+`ikizenBot` repository's `README.md`.
 
 Failure screenshots and traces are written to the ignored `test-results/` folder:
 

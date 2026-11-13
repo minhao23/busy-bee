@@ -27,6 +27,7 @@ export const test = base.extend({
       const handlers = {};
       window.__telegramViewportCalls = { expand: 0, fullscreen: 0 };
       const webApp = {
+        initData: client.initData,
         initDataUnsafe: { user: { id: 101010101 } },
         platform: client.platform,
         viewportStableHeight: client.height,
