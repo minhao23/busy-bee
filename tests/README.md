@@ -1,9 +1,9 @@
 # Browser Tests
 
 These Playwright tests check task persistence across screen switches and reloads,
-including switching screens while a save is pending. There are 46 test executions:
+including switching screens while a save is pending. There are 49 test executions:
 8 core persistence cases run in both `mobile` (390px) and `desktop` (1440px)
-projects; 30 layout, timer, and Telegram checks run once in the `ui` project.
+projects; 33 layout, timer, and Telegram checks run once in the `ui` project.
 Viewport-specific cases use representative sizes rather than repeating the
 same fixed viewport in both device projects.
 
@@ -53,9 +53,16 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/Ma
 - App-header hierarchy, date semantics, alignment, and screenshots at phone and desktop widths.
 - Work, Short Break, and Long Break colors, plus sampled enabled-text AA contrast.
 - Duration editing, validation, alarm dismissal, and a full four-session Pomodoro cycle.
-- Native alarm playback: a two-second non-looping clip, natural completion while
+- Native alarm playback: a three-second non-looping clip, natural completion while
   JavaScript is busy, repeated initialization without orphaned players, and immediate
   audio stopping on Dismiss.
+- No late alarm after background expiry, no replay on returning to the app, and
+  immediate cancellation when hiding an active alarm. Browser visibility and
+  Telegram activation events are simulated, including suspended timer callbacks.
+- Expired reminder snapshots restore silently, including `running` with zero
+  remaining seconds before the server worker marks completion.
+- Native click playback once on Start/Resume in every timer mode; Pause, Reset,
+  restoration, invalid durations, and rejected reminder starts stay silent.
 - Mock-clock progress advancement, pause, and reset.
 - Bot reminder start/pause/resume/reset, reload restoration, and server-owned completion.
 - Failed reminder saves and reconciliation of a committed write with a lost response.
@@ -80,6 +87,13 @@ The fixture only supplies signed-data stand-ins for the two reminder cases, so t
 remaining timer tests continue exercising the standalone local timer.
 Telegram platform and viewport APIs are mocked too; fullscreen tests verify the
 request and fallback behavior, not whether the native client resizes its window.
+Lifecycle tests use native Chromium audio with controlled visibility/host events;
+they do not certify native Telegram iOS/Android background audio behavior.
+
+The in-app completion sound is foreground-only and bounded by the original
+deadline's three-second alarm window. Returning after a background expiry advances
+the timer without replaying it; hiding the app dismisses an active alarm. Background
+Telegram bot reminders are independent of this sound and are unchanged.
 
 Task persistence is checked across reloads. With bot reminders configured, running
 and paused timer state is also checked across reloads. Standalone timer state,

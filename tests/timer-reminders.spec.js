@@ -1,9 +1,18 @@
-import { test, expect } from "./fixtures.js";
+import { test, expect, trackTimerClickSound } from "./fixtures.js";
 
 test.use({ telegramClient: { initData: "isolated-signed-identity" } });
 const mocks = new WeakMap();
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page, context }) => {
+  await trackTimerClickSound(context);
+  await context.addInitScript(() => {
+    window.__alarmRequests = 0;
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      if (new URL(this.src, location.href).pathname.endsWith("/alarm.wav")) window.__alarmRequests++;
+      return play.call(this);
+    };
+  });
   const api = {
     timer: { version: 0, state: "idle", mode: "work", durationSeconds: 1500, remainingSeconds: 1500 },
     calls: [],
@@ -50,18 +59,23 @@ test("reminders synchronize start, pause, reload, resume, reset, and server comp
   await board.focus();
   await page.getByRole("button", { name: "Start", exact: true }).click();
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeEnabled();
+  await expect.poll(() => page.evaluate(() => window.__timerClickSound.plays)).toBe(1);
   api.timer.remainingSeconds = 1490;
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   await expect(page.getByRole("timer")).toHaveText("24:50");
+  expect(await page.evaluate(() => window.__timerClickSound.plays)).toBe(1);
   await board.roundTrip();
   await board.reload();
   await board.focus();
   await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeEnabled();
   await expect(page.getByRole("timer")).toHaveText("24:50");
+  expect(await page.evaluate(() => window.__timerClickSound.plays)).toBe(0);
   await page.getByRole("button", { name: "Resume", exact: true }).click();
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeEnabled();
+  await expect.poll(() => page.evaluate(() => window.__timerClickSound.plays)).toBe(1);
   await page.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(page.getByRole("timer")).toHaveText("25:00");
+  expect(await page.evaluate(() => window.__timerClickSound.plays)).toBe(1);
   expect(api.timer.state).toBe("idle");
   await page.getByRole("button", { name: "Short Break", exact: true }).click();
   await page.getByRole("button", { name: "Start", exact: true }).click();
@@ -80,6 +94,13 @@ test("reminders synchronize start, pause, reload, resume, reset, and server comp
   expect(api.calls.filter(call => call.action === "pause")).toHaveLength(1);
   expect(api.calls.filter(call => call.action === "resume")).toHaveLength(1);
   expect(board.writes).toHaveLength(0);
+
+  // The deadline can expire before the bot worker changes running to completed.
+  Object.assign(api.timer, { state: "running", remainingSeconds: 0 });
+  await board.reload();
+  await board.focus();
+  expect(await page.evaluate(() => window.__alarmRequests)).toBe(0);
+  await expect(page.getByRole("button", { name: "Start", exact: true })).toBeEnabled();
 });
 
 test("failed saves stay stopped and ambiguous committed saves reconcile without resending", async ({ page, board }) => {
@@ -90,10 +111,12 @@ test("failed saves stay stopped and ambiguous committed saves reconcile without 
   await expect(page.getByRole("alert")).toContainText("Couldn't sync");
   await expect(page.getByRole("button", { name: "Start", exact: true })).toBeEnabled();
   expect(api.timer.state).toBe("idle");
+  expect(await page.evaluate(() => window.__timerClickSound.plays)).toBe(0);
   api.failNext = true;
   api.committedFailure = true;
   await page.getByRole("button", { name: "Start", exact: true }).click();
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeEnabled();
   expect(api.timer.state).toBe("running");
   expect(api.calls.filter(call => call.action === "start")).toHaveLength(2);
+  expect(await page.evaluate(() => window.__timerClickSound.plays)).toBe(0);
 });

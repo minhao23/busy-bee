@@ -6,6 +6,24 @@ const deferred = () => {
   return { promise, resolve };
 };
 
+export const trackTimerClickSound = async context => {
+  await context.addInitScript(() => {
+    const NativeAudio = window.Audio;
+    window.__timerClickSound = { plays: 0, ends: 0, loop: false };
+    window.Audio = function (path) {
+      const audio = new NativeAudio(path);
+      if (new URL(path, location.href).pathname.endsWith("/click.wav")) {
+        audio.addEventListener("playing", () => {
+          window.__timerClickSound.plays++;
+          window.__timerClickSound.loop = audio.loop;
+        });
+        audio.addEventListener("ended", () => window.__timerClickSound.ends++);
+      }
+      return audio;
+    };
+  });
+};
+
 export const test = base.extend({
   telegramClient: [{}, { option: true }],
   board: async ({ page, context, telegramClient }, use) => {
