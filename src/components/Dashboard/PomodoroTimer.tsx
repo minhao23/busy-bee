@@ -3,6 +3,7 @@ import { TimerMode } from "../../types";
 import audioManager from "../../utils/audioManager";
 import "../Focus.css";
 import Icon from "../Icon";
+import { createTimerReminderClient, ReminderSnapshot } from "../../utils/timerReminders";
 
 const TIMER_DURATIONS = {
   work: 25 * 60, // 25 minutes
@@ -11,7 +12,7 @@ const TIMER_DURATIONS = {
   custom: 0, // will never use this, only for type consistency
 } as const;
 
-const ALARM_DURATION = 4;
+const ALARM_DISMISS_DELAY = 4;
 
 const PomodoroTimer: React.FC = () => {
   const [mode, setMode] = useState<TimerMode>("work");
@@ -23,6 +24,11 @@ const PomodoroTimer: React.FC = () => {
   const [customSeconds, setCustomSeconds] = useState(0);
   const [isEditingDuration, setIsEditingDuration] = useState(false);
   const [zeroTimeErrorMssg, setZeroTimeErrorMssg] = useState("");
+  const [reminders] = useState(createTimerReminderClient);
+  const [syncing, setSyncing] = useState(!!reminders);
+  const [reminderError, setReminderError] = useState("");
+  const syncLock = useRef(false);
+  const refreshReminder = useRef(false);
   const intervalRef = useRef<number | null>(null);
   const alarmTimerRef = useRef<number | null>(null);
   const deadlineRef = useRef<number | null>(null);
@@ -32,6 +38,67 @@ const PomodoroTimer: React.FC = () => {
   const seconds = timeLeft % 60;
   const cycleSessions = mode === "longBreak" && completedSessions > 0 && completedSessions % 4 === 0
     ? 4 : completedSessions % 4;
+
+  const restoreReminder = (timer: ReminderSnapshot) => {
+    if (timer.state !== "running" && timer.state !== "paused") return;
+    setMode(timer.mode);
+    if (timer.mode === "custom") {
+      setCustomMinutes(Math.floor(timer.durationSeconds / 60));
+      setCustomSeconds(timer.durationSeconds % 60);
+    }
+    setTimeLeft(timer.remainingSeconds);
+    deadlineRef.current = timer.state === "running" ? Date.now() + timer.remainingSeconds * 1000 : null;
+    setIsActive(timer.state === "running");
+  };
+
+  useEffect(() => {
+    if (!reminders) return;
+    let cancelled = false;
+    reminders.send("read").then(timer => {
+      if (!cancelled) restoreReminder(timer);
+    }).catch(() => {
+      if (!cancelled) setReminderError("Couldn't load timer reminders. Check your connection and retry.");
+    }).finally(() => {
+      if (!cancelled) setSyncing(false);
+    });
+    return () => { cancelled = true; };
+  }, [reminders]);
+
+  const syncReminder = async (action: "start" | "pause" | "resume" | "reset") => {
+    if (!reminders) return true;
+    if (syncLock.current || syncing) return false;
+    syncLock.current = true;
+    setSyncing(true);
+    setReminderError("");
+    try {
+      if (refreshReminder.current || !reminders.snapshot) {
+        await reminders.send("read");
+        refreshReminder.current = false;
+      }
+      const timer = await reminders.send(action, mode, getTime(mode));
+      restoreReminder(timer);
+      return true;
+    } catch (error) {
+      setReminderError(error instanceof Error ? error.message : "Couldn't sync timer reminders. Please retry.");
+      // A failed response may still have committed. Reconcile instead of guessing.
+      try {
+        const timer = await reminders.send("read");
+        if (timer.state === "completed" && isActive) setTimeLeft(0);
+        else if (timer.state === "idle") {
+          setIsActive(false);
+          deadlineRef.current = null;
+          setTimeLeft(getTime(mode));
+        }
+        else restoreReminder(timer);
+      } catch {
+        refreshReminder.current = true;
+      }
+      return false;
+    } finally {
+      syncLock.current = false;
+      setSyncing(false);
+    }
+  };
 
   useLayoutEffect(() => {
     const timer = timerRef.current;
@@ -106,22 +173,22 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const handleTimerComplete = () => {
+    if (alarmTimerRef.current !== null) return;
     setIsActive(false);
     setIsAlarmRinging(true);
     deadlineRef.current = null;
+    refreshReminder.current = true;
 
-    // Play alarm
-    const loop = true;
-    audioManager.play("alarm", loop);
+    audioManager.play("alarm");
 
-    // Play alarm until timer is up
+    // The short clip ends itself; this delay only advances the timer UI.
     alarmTimerRef.current = window.setTimeout(() => {
       handleAlarmDismiss();
-    }, ALARM_DURATION * 1000);
+    }, ALARM_DISMISS_DELAY * 1000);
   };
 
   const handleAlarmDismiss = () => {
-    if (!alarmTimerRef.current) return;
+    if (alarmTimerRef.current === null) return;
     stopAlarm();
     setIsAlarmRinging(false);
 
@@ -140,19 +207,30 @@ const PomodoroTimer: React.FC = () => {
     }
   };
 
-  const toggleTimer = () => {
-    if (isAlarmRinging) return;
+  const toggleTimer = async () => {
+    if (isAlarmRinging || syncing || syncLock.current) return;
     if (isCustomModeZeroTime()) {
       setZeroTimeErrorMssg("Please input a valid time period for the timer");
     } else {
+      const action = isActive ? "pause"
+        : reminders?.snapshot?.state === "paused" && reminders.snapshot.mode === mode
+          && reminders.snapshot.durationSeconds === getTime(mode)
+          && timeLeft < getTime(mode) ? "resume" : "start";
+      if (!await syncReminder(action)) return;
       setZeroTimeErrorMssg("");
       setIsEditingDuration(false);
-      deadlineRef.current = isActive ? null : Date.now() + timeLeft * 1000;
-      setIsActive(!isActive);
+      if (!reminders) {
+        if (isActive && deadlineRef.current) {
+          setTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
+        }
+        deadlineRef.current = isActive ? null : Date.now() + timeLeft * 1000;
+        setIsActive(!isActive);
+      }
     }
   };
 
-  const resetTimer = () => {
+  const resetTimer = async () => {
+    if (!await syncReminder("reset")) return;
     setIsActive(false);
     deadlineRef.current = null;
     stopAlarm();
@@ -160,7 +238,8 @@ const PomodoroTimer: React.FC = () => {
     setTimeLeft(getTime(mode));
   };
 
-  const switchMode = (newMode: TimerMode) => {
+  const switchMode = async (newMode: TimerMode) => {
+    if (!await syncReminder("reset")) return;
     setZeroTimeErrorMssg("");
     setIsEditingDuration(false);
     deadlineRef.current = null;
@@ -223,7 +302,7 @@ const PomodoroTimer: React.FC = () => {
           className={`mode-button ${mode === "work" ? "active" : ""}`}
           onClick={() => switchMode("work")}
           aria-pressed={mode === "work"}
-          disabled={isActive || isAlarmRinging}
+          disabled={isActive || isAlarmRinging || syncing}
         >
           Work
         </button>
@@ -231,7 +310,7 @@ const PomodoroTimer: React.FC = () => {
           className={`mode-button ${mode === "shortBreak" ? "active" : ""}`}
           onClick={() => switchMode("shortBreak")}
           aria-pressed={mode === "shortBreak"}
-          disabled={isActive || isAlarmRinging}
+          disabled={isActive || isAlarmRinging || syncing}
         >
           Short Break
         </button>
@@ -239,7 +318,7 @@ const PomodoroTimer: React.FC = () => {
           className={`mode-button ${mode === "longBreak" ? "active" : ""}`}
           onClick={() => switchMode("longBreak")}
           aria-pressed={mode === "longBreak"}
-          disabled={isActive || isAlarmRinging}
+          disabled={isActive || isAlarmRinging || syncing}
         >
           Long Break
         </button>
@@ -265,7 +344,7 @@ const PomodoroTimer: React.FC = () => {
         </div>
         <button className="custom-button" aria-label="Custom timer"
           aria-expanded={isEditingDuration && !isActive} aria-controls="duration-settings"
-          onClick={toggleDurationEditor} disabled={isActive || isAlarmRinging}>
+          onClick={toggleDurationEditor} disabled={isActive || isAlarmRinging || syncing}>
           <Icon name="edit" />
           {isEditingDuration ? "Done" : "Edit"}
         </button>
@@ -277,7 +356,7 @@ const PomodoroTimer: React.FC = () => {
             <label htmlFor="custom-minutes">Minutes</label>
             <select
               id="custom-minutes"
-              disabled={isAlarmRinging}
+              disabled={isAlarmRinging || syncing}
               value={customMinutes}
               onChange={(e) => {
                 const minutes = parseInt(e.target.value);
@@ -298,7 +377,7 @@ const PomodoroTimer: React.FC = () => {
             <label htmlFor="custom-seconds">Seconds</label>
             <select
               id="custom-seconds"
-              disabled={isAlarmRinging}
+              disabled={isAlarmRinging || syncing}
               value={customSeconds}
               onChange={(e) => {
                 const seconds = parseInt(e.target.value);
@@ -322,13 +401,13 @@ const PomodoroTimer: React.FC = () => {
         <button
           className={`control-button primary ${isActive ? "pause" : "start"}`}
           onClick={toggleTimer}
-          disabled={isAlarmRinging}
+          disabled={isAlarmRinging || syncing}
         >
           <Icon name={isActive ? "pause" : "play"} />
           {isAlarmRinging ? "Finished" : isActive ? "Pause" : timeLeft < getTime(mode) ? "Resume" : "Start"}
         </button>
         {!isAlarmRinging ? (
-          <button className="control-button secondary" onClick={resetTimer}>
+          <button className="control-button secondary" onClick={resetTimer} disabled={syncing}>
             <Icon name="reset" /> Reset
           </button>
         ) : (
@@ -342,6 +421,9 @@ const PomodoroTimer: React.FC = () => {
       </div>
       {zeroTimeErrorMssg && (
         <div className="error-message" role="alert">{zeroTimeErrorMssg}</div>
+      )}
+      {reminderError && (
+        <div className="error-message" role="alert">{reminderError}</div>
       )}
     </div>
   );
