@@ -12,7 +12,7 @@ const TIMER_DURATIONS = {
   custom: 0, // will never use this, only for type consistency
 } as const;
 
-const ALARM_DISMISS_DELAY = 4;
+const ALARM_DISMISS_DELAY = 3;
 
 const PomodoroTimer: React.FC = () => {
   const [mode, setMode] = useState<TimerMode>("work");
@@ -31,6 +31,10 @@ const PomodoroTimer: React.FC = () => {
   const refreshReminder = useRef(false);
   const intervalRef = useRef<number | null>(null);
   const alarmTimerRef = useRef<number | null>(null);
+  const completionPendingRef = useRef(false);
+  const alarmExpiresAtRef = useRef<number | null>(null);
+  const appActiveRef = useRef(!document.hidden && window.Telegram?.WebApp?.isActive !== false);
+  const silentCompletionRef = useRef(false);
   const deadlineRef = useRef<number | null>(null);
   const timerRef = useRef<HTMLDivElement | null>(null);
 
@@ -41,6 +45,9 @@ const PomodoroTimer: React.FC = () => {
 
   const restoreReminder = (timer: ReminderSnapshot) => {
     if (timer.state !== "running" && timer.state !== "paused") return;
+    if (timer.state === "running" && timer.remainingSeconds === 0) {
+      silentCompletionRef.current = true;
+    }
     setMode(timer.mode);
     if (timer.mode === "custom") {
       setCustomMinutes(Math.floor(timer.durationSeconds / 60));
@@ -156,11 +163,49 @@ const PomodoroTimer: React.FC = () => {
   }, [isActive, timeLeft]);
 
   useEffect(() => {
-    return () => {
-      if (alarmTimerRef.current) {
-        clearTimeout(alarmTimerRef.current);
+    const webApp = window.Telegram?.WebApp;
+    let pageVisible = !document.hidden;
+    let telegramActive = webApp?.isActive !== false;
+    const syncActivity = () => {
+      const active = pageVisible && telegramActive;
+      if (!active) {
+        if (completionPendingRef.current) handleAlarmDismiss();
+        else audioManager.stop("alarm");
+      } else {
+        if (!appActiveRef.current && deadlineRef.current !== null && deadlineRef.current <= Date.now()) {
+          silentCompletionRef.current = true;
+        }
+        if (alarmExpiresAtRef.current !== null && alarmExpiresAtRef.current <= Date.now()) {
+          handleAlarmDismiss();
+        }
+        if (isActive && deadlineRef.current !== null) {
+          setTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
+        }
       }
-      audioManager.stop("alarm");
+      appActiveRef.current = active;
+    };
+    const onVisibility = () => { pageVisible = !document.hidden; syncActivity(); };
+    const onPageHide = () => { pageVisible = false; syncActivity(); };
+    const onActivated = () => { telegramActive = true; syncActivity(); };
+    const onDeactivated = () => { telegramActive = false; syncActivity(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("pageshow", onVisibility);
+    webApp?.onEvent?.("activated", onActivated);
+    webApp?.onEvent?.("deactivated", onDeactivated);
+    syncActivity();
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("pageshow", onVisibility);
+      webApp?.offEvent?.("activated", onActivated);
+      webApp?.offEvent?.("deactivated", onDeactivated);
+    };
+  }, [isActive, mode, completedSessions]);
+
+  useEffect(() => {
+    return () => {
+      stopAlarm();
     };
   }, []);
 
@@ -173,22 +218,31 @@ const PomodoroTimer: React.FC = () => {
   };
 
   const handleTimerComplete = () => {
-    if (alarmTimerRef.current !== null) return;
+    if (completionPendingRef.current) return;
+    completionPendingRef.current = true;
+    const expiresAt = (deadlineRef.current ?? Date.now()) + ALARM_DISMISS_DELAY * 1000;
+    const remainingAlarmTime = expiresAt - Date.now();
     setIsActive(false);
-    setIsAlarmRinging(true);
     deadlineRef.current = null;
     refreshReminder.current = true;
 
+    // Catch-up ticks after a suspended WebView must not create a new alarm window.
+    if (!appActiveRef.current || document.hidden || silentCompletionRef.current || remainingAlarmTime <= 0) {
+      handleAlarmDismiss();
+      return;
+    }
+    setIsAlarmRinging(true);
+    alarmExpiresAtRef.current = expiresAt;
     audioManager.play("alarm");
 
-    // The short clip ends itself; this delay only advances the timer UI.
+    // The clip also ends itself if the browser delays this UI callback.
     alarmTimerRef.current = window.setTimeout(() => {
       handleAlarmDismiss();
-    }, ALARM_DISMISS_DELAY * 1000);
+    }, remainingAlarmTime);
   };
 
   const handleAlarmDismiss = () => {
-    if (alarmTimerRef.current === null) return;
+    if (!completionPendingRef.current) return;
     stopAlarm();
     setIsAlarmRinging(false);
 
@@ -216,7 +270,9 @@ const PomodoroTimer: React.FC = () => {
         : reminders?.snapshot?.state === "paused" && reminders.snapshot.mode === mode
           && reminders.snapshot.durationSeconds === getTime(mode)
           && timeLeft < getTime(mode) ? "resume" : "start";
+      if (!isActive) silentCompletionRef.current = false;
       if (!await syncReminder(action)) return;
+      if (!isActive && !silentCompletionRef.current) audioManager.play("click");
       setZeroTimeErrorMssg("");
       setIsEditingDuration(false);
       if (!reminders) {
@@ -269,8 +325,10 @@ const PomodoroTimer: React.FC = () => {
 
   const stopAlarm = () => {
     audioManager.stop("alarm");
+    completionPendingRef.current = false;
+    alarmExpiresAtRef.current = null;
 
-    if (alarmTimerRef.current) {
+    if (alarmTimerRef.current !== null) {
       clearTimeout(alarmTimerRef.current); // prevent double-trigger
       alarmTimerRef.current = null;
     }

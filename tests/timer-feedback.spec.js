@@ -79,20 +79,28 @@ test("completed work sessions fill the cycle and select the correct break color"
     await page.getByRole("button", { name: "Start", exact: true }).click();
     await page.clock.fastForward(25 * 60 * 1000);
     await expect(page.getByRole("button", { name: "Finished", exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "Dismiss", exact: true }).click();
+    await page.clock.fastForward(3000);
     await expect(page.locator(".session-dots .filled")).toHaveCount(completed);
     await expect(page.getByRole("group", { name: `${completed} of 4 work sessions before a long break` })).toBeVisible();
     await expect(page.locator(".pomodoro-timer")).toHaveAttribute("data-mode", completed === 4 ? "longBreak" : "shortBreak");
+    if (completed === 1) {
+      await page.getByRole("button", { name: "Start", exact: true }).click();
+      await page.clock.fastForward(5 * 60 * 1000);
+      await expect(page.getByRole("button", { name: "Finished", exact: true })).toBeVisible();
+      await page.clock.fastForward(3000);
+      await expect(page.locator(".pomodoro-timer")).toHaveAttribute("data-mode", "work");
+      await expect(page.locator(".session-dots .filled")).toHaveCount(1);
+    }
   }
   await page.getByRole("button", { name: "Start", exact: true }).click();
   await page.clock.fastForward(15 * 60 * 1000);
   await expect(page.getByRole("button", { name: "Finished", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Dismiss", exact: true }).click();
+  await page.clock.fastForward(3000);
   await expect(page.locator(".session-dots .filled")).toHaveCount(0);
   await expect(page.locator(".pomodoro-timer")).toHaveAttribute("data-mode", "work");
 });
 
-test("custom validation and alarm dismissal work with duration editing", async ({ page, board }) => {
+test("custom validation and three-second alarm dismissal work with duration editing", async ({ page, board }) => {
   await board.focus();
   await page.clock.install();
   await page.getByRole("button", { name: "Custom timer", exact: true }).click();
@@ -104,7 +112,9 @@ test("custom validation and alarm dismissal work with duration editing", async (
   await page.clock.fastForward(1000);
   await expect(page.getByRole("button", { name: "Finished", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Custom timer", exact: true })).toBeDisabled();
-  await page.getByRole("button", { name: "Dismiss", exact: true }).click();
+  await page.clock.fastForward(2000);
+  await expect(page.getByRole("button", { name: "Finished", exact: true })).toBeVisible();
+  await page.clock.fastForward(1000);
   await expect(page.getByRole("timer")).toHaveText("25:00");
 });
 
