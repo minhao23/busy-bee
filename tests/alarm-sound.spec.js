@@ -100,12 +100,12 @@ test("returning after a background deadline completes the timer without a late a
   await page.clock.install();
   await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
   for (const host of ["browser", "telegram"]) {
-    for (const elapsed of [31000, 60000, null]) {
+    for (const elapsed of [31000, 60000]) {
       await startCustomTimer(page, 30);
       await setAppActive(page, false, host);
-      // Cover both suspended callbacks and a countdown still ticking while hidden.
-      if (elapsed !== null) await page.clock.setSystemTime(await page.evaluate(ms => Date.now() + ms, elapsed));
-      else await page.clock.runFor(30000);
+      await page.clock.setSystemTime(await page.evaluate(ms => Date.now() + ms, elapsed));
+      // A stale callback while still hidden must not start a late alarm either.
+      if (elapsed === 60000) await page.clock.runFor(1000);
       await setAppActive(page, true, host);
       await page.clock.runFor(1000);
       expect(await page.evaluate(() => window.__alarmPlayers[0].events)).not.toContain("play-request");
@@ -136,18 +136,44 @@ test("returning after a background deadline completes the timer without a late a
   expect(await page.evaluate(() => window.__alarmPlayers[0].events.filter(event => event === "play-request"))).toHaveLength(1);
 });
 
-test("leaving during an alarm stops playback and returning does not replay it", async ({ page, board }) => {
+test("timely background alarms and already-playing alarms finish once without replaying on return", async ({ page, board }) => {
   await board.focus();
   for (const host of ["browser", "telegram"]) {
-    await startCustomTimer(page, 1);
-    await page.waitForFunction(() => !window.__alarmPlayers[0].audio.paused);
-    const plays = await page.evaluate(() => window.__alarmPlayers[0].events.filter(event => event === "play-request").length);
-    await setAppActive(page, false, host);
-    expect(await page.evaluate(() => window.__alarmPlayers[0].audio.paused)).toBe(true);
-    await setAppActive(page, true, host);
-    await expect(page.getByRole("button", { name: "Start", exact: true })).toBeEnabled();
-    expect(await page.evaluate(() => window.__alarmPlayers[0].events.filter(event => event === "play-request").length)).toBe(plays);
+    for (const hideBeforeDeadline of [true, false]) {
+      const plays = () => page.evaluate(() => window.__alarmPlayers[0].events.filter(event => event === "play-request").length);
+      const before = await plays();
+      await startCustomTimer(page, 1);
+      if (hideBeforeDeadline) await setAppActive(page, false, host);
+      await expect.poll(() => page.evaluate(() => window.__alarmPlayers[0].audio.paused)).toBe(false);
+      if (!hideBeforeDeadline) await setAppActive(page, false, host);
+      expect(await page.evaluate(() => window.__alarmPlayers[0].audio.paused)).toBe(false);
+      expect(await plays()).toBe(before + 1);
+
+      // Returning during playback must continue the same clip, not restart it.
+      await setAppActive(page, true, host);
+      await expect(page.getByRole("button", { name: "Dismiss", exact: true })).toBeVisible();
+      expect(await plays()).toBe(before + 1);
+      await setAppActive(page, false, host);
+      await expect(page.getByRole("button", { name: "Start", exact: true })).toBeEnabled();
+      expect(await page.evaluate(() => window.__alarmPlayers[0].audio.paused)).toBe(true);
+      await setAppActive(page, true, host);
+      expect(await plays()).toBe(before + 1);
+    }
   }
+
+  // If suspension delays dismissal, returning must stop the expired playback.
+  await page.clock.install();
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await startCustomTimer(page, 30);
+  await setAppActive(page, false, "browser");
+  await page.clock.runFor(30000);
+  await expect.poll(() => page.evaluate(() => window.__alarmPlayers[0].audio.paused)).toBe(false);
+  const plays = await page.evaluate(() => window.__alarmPlayers[0].events.filter(event => event === "play-request").length);
+  await page.clock.setSystemTime(await page.evaluate(() => Date.now() + 60000));
+  await setAppActive(page, true, "browser");
+  expect(await page.evaluate(() => window.__alarmPlayers[0].audio.paused)).toBe(true);
+  await expect(page.getByRole("button", { name: "Start", exact: true })).toBeEnabled();
+  expect(await page.evaluate(() => window.__alarmPlayers[0].events.filter(event => event === "play-request").length)).toBe(plays);
 });
 
 test("starting and resuming play the click once; pause, reset, and invalid timers stay silent", async ({ page, board }) => {

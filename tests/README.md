@@ -38,6 +38,7 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/Ma
 ## Coverage
 
 - Add, move, complete, reopen, and delete tasks.
+- Empty and whitespace-only task names show validation without audio or database writes.
 - Save responses completed while the Tasks screen is hidden.
 - State after returning to Tasks and after a full page reload.
 - Exactly one write per action and no writes caused by navigation.
@@ -56,9 +57,10 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/Ma
 - Native alarm playback: a three-second non-looping clip, natural completion while
   JavaScript is busy, repeated initialization without orphaned players, and immediate
   audio stopping on Dismiss.
-- No late alarm after background expiry, no replay on returning to the app, and
-  immediate cancellation when hiding an active alarm. Browser visibility and
-  Telegram activation events are simulated, including suspended timer callbacks.
+- Timely background alarms and continued playback when hiding an active alarm.
+  No late catch-up alarm or replay on returning, including stopping expired playback
+  if suspension delayed dismissal. Browser visibility and Telegram activation events
+  are simulated, including suspended timer callbacks.
 - Expired reminder snapshots restore silently, including `running` with zero
   remaining seconds before the server worker marks completion.
 - Native click playback once on Start/Resume in every timer mode; Pause, Reset,
@@ -90,10 +92,17 @@ request and fallback behavior, not whether the native client resizes its window.
 Lifecycle tests use native Chromium audio with controlled visibility/host events;
 they do not certify native Telegram iOS/Android background audio behavior.
 
-The in-app completion sound is foreground-only and bounded by the original
-deadline's three-second alarm window. Returning after a background expiry advances
-the timer without replaying it; hiding the app dismisses an active alarm. Background
-Telegram bot reminders are independent of this sound and are unchanged.
+The in-app completion sound can play in the background when the host allows
+JavaScript and audio to run. It keeps the original deadline's three-second alarm
+window; hiding the app no longer mutes it. Returning after a suspended timer expires
+advances the timer silently, without starting a fresh alarm. Returning during an
+existing alarm does not restart it; expired playback is stopped on return even if
+the dismissal callback was delayed.
+
+This is best-effort background audio, not an OS-level alarm. A suspended or closed
+Mini App cannot execute its countdown callback or start audio. Server-side Telegram
+bot reminders remain the fallback for that case and are unchanged; audible alerts
+depend on the user's Telegram chat and device notification settings.
 
 Task persistence is checked across reloads. With bot reminders configured, running
 and paused timer state is also checked across reloads. Standalone timer state,
