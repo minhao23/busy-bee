@@ -168,10 +168,7 @@ const PomodoroTimer: React.FC = () => {
     let telegramActive = webApp?.isActive !== false;
     const syncActivity = () => {
       const active = pageVisible && telegramActive;
-      if (!active) {
-        if (completionPendingRef.current) handleAlarmDismiss();
-        else audioManager.stop("alarm");
-      } else {
+      if (active) {
         if (!appActiveRef.current && deadlineRef.current !== null && deadlineRef.current <= Date.now()) {
           silentCompletionRef.current = true;
         }
@@ -226,8 +223,8 @@ const PomodoroTimer: React.FC = () => {
     deadlineRef.current = null;
     refreshReminder.current = true;
 
-    // Catch-up ticks after a suspended WebView must not create a new alarm window.
-    if (!appActiveRef.current || document.hidden || silentCompletionRef.current || remainingAlarmTime <= 0) {
+    // Allow timely background playback, but never create a fresh catch-up alarm window.
+    if (silentCompletionRef.current || remainingAlarmTime <= 0) {
       handleAlarmDismiss();
       return;
     }

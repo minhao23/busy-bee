@@ -6,6 +6,21 @@ const move = async (board, importance) => {
 };
 
 test("adding a task persists exactly once across navigation and reloads", async ({ page, board }) => {
+  await page.evaluate(() => {
+    window.__taskSoundRequests = [];
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      window.__taskSoundRequests.push(this.src);
+      return play.call(this);
+    };
+  });
+  for (const name of ["", "   "]) {
+    await page.getByRole("textbox", { name: "Task name" }).fill(name);
+    await page.getByRole("button", { name: "Add task", exact: true }).click();
+    await expect(page.locator(".board-feedback [role='alert']")).toHaveText("Give your task a name first.");
+    expect(board.writes).toHaveLength(0);
+    expect(await page.evaluate(() => window.__taskSoundRequests)).toEqual([]);
+  }
   await page.getByRole("combobox", { name: "Priority for new task" }).selectOption("2");
   await board.mutation(async () => {
     await page.getByRole("textbox", { name: "Task name" }).fill("Persistence added");

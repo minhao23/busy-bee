@@ -32,7 +32,6 @@ const TodoList: React.FC = () => {
   const addTask = async () => {
     if (saving) return;
     if (!newTaskName.trim()) {
-      audioManager.play("emptyAdd");
       setSaveError("Give your task a name first.");
       return;
     }
